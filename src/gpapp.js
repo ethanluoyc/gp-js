@@ -135,7 +135,7 @@ class GPApp extends React.Component {
       var w = <div>Covariance function<select value={this.state.newGPcf} onChange={this.setNewGPcf.bind(this)}>{gpoptions}</select></div>
     }
     return (
-      <div id="gp" onMouseEnter={this.startDiscreteSampling.bind(this)} onMouseLeave={this.stopSampling.bind(this)}>
+      <div id="gp" onMouseEnter={this.startContinuousSampling.bind(this)} onMouseLeave={this.stopSampling.bind(this)}>
         <div id="gplist">
           <div id="addgp">  
           <div> 
@@ -150,8 +150,8 @@ class GPApp extends React.Component {
             Show mean and credible intervals
             <br />
             <input type="checkbox" checked={this.state.showSamples} onChange={this.toggleShowSamples.bind(this)} />Show samples<br />
-            <button onClick={this.startDiscreteSampling.bind(this)} disabled={this.state.samplingState === 1 || this.state.addTrPoints || !this.state.showSamples}>sample independently</button>
-            <br />
+            {/* <button onClick={this.startDiscreteSampling.bind(this)} disabled={this.state.samplingState === 1 || this.state.addTrPoints || !this.state.showSamples}>sample independently</button>
+            <br /> */}
             <button onClick={this.startContinuousSampling.bind(this)} disabled={this.state.samplingState === 2 || this.state.addTrPoints || !this.state.showSamples}>sample continuous trajectories</button>
             <br />
             <button onClick={this.stopSampling.bind(this)} disabled={this.state.samplingState === 0 || this.state.addTrPoints}>stop sampling</button>
@@ -161,7 +161,7 @@ class GPApp extends React.Component {
             {this.state.addTrPoints ? <button onClick={this.clearTrPoints.bind(this)}>clear</button> : ''}
           </div>
           <GPAxis state={this.state} addTrPoint={this.addTrPoint.bind(this)} />
-          <figcaption>GP Regression with different length scales. Hover on the figure to draw samples. </figcaption>
+          <figcaption>{this.props.caption}</figcaption>
         </figure>
         </div>
         </div>
