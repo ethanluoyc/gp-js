@@ -1,4 +1,4 @@
-import GPApp from "./gpapp.js";
+import GPApp from "./gpapp";
 
 const comp0 = ReactDOM.render(
   <GPApp ty="lengthscales" caption="different length scales"/>,

@@ -1,5 +1,5 @@
-import {GP, GPAxis, cfs} from "./gputils.js";
-import Slider from "./slider.js";
+import {GP, GPAxis, cfs} from "./gputils";
+import Slider from "./slider";
 
 export default class GPApp extends React.Component {
   constructor(props) {
