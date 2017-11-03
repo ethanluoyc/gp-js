@@ -1,4 +1,3 @@
-/** @jsx React.DOM */
 var tePointsX = numeric.linspace(-5, 5, numeric.dim(distmatTe)[0]);
 var randn = d3.random.normal();
 function randnArray(size){
@@ -150,12 +149,13 @@ function recomputeProjections(GPs, dmTr, dmTeTr, trY) {
   for (var gpi = 0; gpi < GPs.length; gpi++){
     var gp = GPs[gpi];
     var tmp = computeProjection(gp.Kte, gp.cf, gp.params, dmTr, dmTeTr, trY);
+    // console.log(gp.params[0]);
+    gp.Kte = cfs[gp.cf].f(distmatTe, gp.params);
     gp.proj = tmp.proj;
     gp.mu = tmp.mu;
     gp.sd95 = tmp.sd95;
     GPs[gpi] = gp;
   }
-
   return GPs;
 }
 
@@ -170,7 +170,7 @@ function computeDistanceMatrix(xdata1, xdata2) {
   return dm;
 }
 
-var GPAxis = React.createClass({
+var GPAxis = createReactClass({
   render: function() {
     return (<svg></svg>);
   },
@@ -193,9 +193,9 @@ var GPAxis = React.createClass({
   componentWillReceiveProps: function(props) {
     // bind events
     if (props.state.addTrPoints) {
-      d3.select(this.getDOMNode()).on("click", this.addTrPoint);
+      d3.select(ReactDOM.findDOMNode(this)).on("click", this.addTrPoint);
     } else {
-      d3.select(this.getDOMNode()).on("click", null);
+      d3.select(ReactDOM.findDOMNode(this)).on("click", null);
     }
     // redraw training points
     this.drawTrPoints(props.state.trPointsX, props.state.trPointsY);
@@ -216,7 +216,7 @@ var GPAxis = React.createClass({
     }
   },
   addTrPoint: function() {
-    var mousePos = d3.mouse(this.getDOMNode());
+    var mousePos = d3.mouse(ReactDOM.findDOMNode(this));
     var x = this.scales.x;
     var y = this.scales.y;
 
@@ -225,6 +225,8 @@ var GPAxis = React.createClass({
   },
   updateState: function() {
     var M = numeric.dim(distmatTe)[1];
+    this.props.state.GPs = recomputeProjections(this.props.state.GPs, 
+      this.props.state.dmTr, this.props.state.dmTeTr, this.props.state.trPointsY);
     for (var i = 0; i < this.props.state.GPs.length; i++){
       var gp = this.props.state.GPs[i];
       gp.z = randnArray(M);
@@ -232,6 +234,8 @@ var GPAxis = React.createClass({
   },
   stepState: 0,
   contUpdateState: function() {
+    this.props.state.GPs = recomputeProjections(this.props.state.GPs, 
+      this.props.state.dmTr, this.props.state.dmTeTr, this.props.state.trPointsY);
     var M = numeric.dim(distmatTe)[1];
     var alfa = 1.0-this.props.state.alfa;
     var n_steps = this.props.state.NSteps;
@@ -313,6 +317,7 @@ var GPAxis = React.createClass({
     } else {
       var gps = [];
     }
+
     var paths = this.lines.selectAll("path").data(gps, function (d) { return d.id; })
                           .attr("d", function (d) {
                             var datay = numeric.add(numeric.dot(d.proj, d.z), d.mu);
@@ -329,7 +334,7 @@ var GPAxis = React.createClass({
   },
   scales: { x: null, y: null },
   componentDidMount: function() {
-    var svg = d3.select(this.getDOMNode());
+    var svg = d3.select(ReactDOM.findDOMNode(this));
     var height = svg.attr("height"),
         width  = svg.attr("width");
     if (!height) {
@@ -354,9 +359,11 @@ var GPAxis = React.createClass({
     this.scales.y = y;
     var xAxis = d3.svg.axis()
                       .scale(x)
+                      .ticks(5)
                       .orient("bottom");
     var yAxis = d3.svg.axis()
                       .scale(y)
+                      .ticks(5)
                       .orient("left");
     this.gpline = d3.svg.line()
                         .x(function(d) { return x(d[0]); })
@@ -383,7 +390,7 @@ var GPAxis = React.createClass({
 });
 
 
-var GPList = React.createClass({
+var GPList = createReactClass({
   render: function() {
     var delGP = this.props.delGP;
     var gplist = this.props.GPs.map(function (gp) {
@@ -391,6 +398,10 @@ var GPList = React.createClass({
                 <td className={"tr"+gp.id}>{gp.id}</td><td>{cfs[gp.cf].name}</td><td>{gp.params[0].toFixed(2)}</td><td>{gp.params[1].toFixed(2)}</td><td><button onClick={delGP(gp.id)}>remove</button></td>
               </tr>);
     });
-    return (<tbody>{gplist}</tbody>);
+    return (<table>
+    <thead>
+      <tr><th>id</th><th>covariance</th><th>length scale</th><th>noise</th><th></th></tr>
+    </thead>
+    <tbody>{gplist}</tbody></table>);
   }
 });

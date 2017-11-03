@@ -3,25 +3,27 @@
 <head>
 <meta charset='utf-8'>
 <title>Gaussian process regression demo</title>
-<link href='http://fonts.googleapis.com/css?family=Lora:400,400italic,700,700italic|Special+Elite' rel='stylesheet' type='text/css'>
+<script src="http://distill.pub/template.v1.js"></script>
 <link href="site.css" rel="stylesheet" type="text/css">
-<link rel="shortcut icon" href="halfmoon9.ico" />
-
 <link href="gp.css" rel="stylesheet" type="text/css">
 
-<script src="react.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/create-react-class@15.6.2/create-react-class.min.js"></script>
 <script src="d3.min.js" charset="utf-8"></script>
-<script src="numeric-1.2.6.min.js"></script>
 <script src="distancematrix.js"></script>
-<script src="build/slider.js"></script>
-<script src="build/gputils.js"></script>
+<script src="lib/slider.js"></script>
+<script src="lib/gputils.js"></script>
 </head>
-<body>
-<div id="main"><div id="tmain">
-  <h1 id="sitetitle"><a href="http://www.tmpl.fi">home</a></h1>
+
+<dt-article class="centered post">
   <h1>Gaussian process regression demo</h1>
-  <div id="gp-outer"></div>
-  <script src="build/gpapp.js"></script>
-</div></div>
-</body>
+  <script src="lib/gpapp.js"></script>
+  <div id="gp-lengthscales"></div>
+  <script src="lib/gp-lengthscales.js"></script>
+  <div id="gp-covariance"></div>
+  <script src="lib/gp-covariance.js"></script>
+</dt-article>
+
 </html>

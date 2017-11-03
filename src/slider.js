@@ -1,5 +1,4 @@
-/** @jsx React.DOM */
-var Slider = React.createClass({
+var Slider = createReactClass({
   render: function() {
     // Just insert the svg-element and render rest in componentDidMount.
     // Marker location is updated in componentWillReceiveProps using d3.
@@ -48,7 +47,7 @@ var Slider = React.createClass({
     var drag = d3.behavior.drag().on("drag", dragmove);
 
     // bind d3 events and insert background line and marker
-    var svg = d3.select(this.getDOMNode());
+    var svg = d3.select(ReactDOM.findDOMNode(this));
     svg.attr("class", "slider")
        .attr("width", opt.width)
        .attr("height", opt.height)
