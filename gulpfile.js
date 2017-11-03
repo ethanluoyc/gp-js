@@ -1,5 +1,5 @@
-const gulp = require('gulp')
-const babel = require('gulp-babel')
+const gulp = require('gulp');
+const babel = require('gulp-babel');
 
 gulp.task('babel', () =>
 gulp.src('src/*.js')
@@ -13,4 +13,4 @@ gulp.task('watch', function() {
     gulp.watch('src/*.js', ['babel'])
   });
 
-gulp.task('default', ['watch'])
+gulp.task('default', ['watch']);

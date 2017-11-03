@@ -1,4 +1,7 @@
-class GPApp extends React.Component {
+import {GP, GPAxis, cfs} from "./gputils.js";
+import Slider from "./slider.js";
+
+export default class GPApp extends React.Component {
   constructor(props) {
     super(props);
     this.state = { GPs: [new GP(0, [1,0.2], 1, [], [], [])],
@@ -40,7 +43,11 @@ class GPApp extends React.Component {
   }
   clearTrPoints() { this.setState({ trPointsX: [], trPointsY: [] }); }
 
-  toggleShowMeanAndVar() { if (!this.state.addTrPoints) this.setState({ showMeanAndVar: !this.state.showMeanAndVar }); }
+  toggleShowMeanAndVar() { 
+    // if (!this.state.addTrPoints) 
+    this.setState({ showMeanAndVar: !this.state.showMeanAndVar }); 
+  }
+
   toggleShowSamples() {
     if (!this.state.addTrPoints) {
       if (this.state.showSamples) {
@@ -50,35 +57,36 @@ class GPApp extends React.Component {
       }
     }
   }
+
   setNewGPParam(newVal) { 
-    this.setState({ newGPParam: newVal }); 
-    var gps = this.state.GPs;
+    let gps = this.state.GPs;
     for (var i = 0; i < gps.length; i++) {
-      gps[i].params[0] = newVal;
+      const gp = gps[i];
+      console.log(newVal);
+      gps[i] = new GP(gps[i].cf, [newVal, gp.params[1]], gp.id, [], [], [])
     }
-//    gps = recomputeProjections(gps, this.state.dmTr, this.state.dmTeTr, this.state.trPointsY);
-    this.setState({GPs: gps});
+    this.setState({newGPParam: newVal, GPs: gps});
   }
 
   setNewGPNoise(newVal) { 
-    this.setState({ newGPNoise: newVal }); 
-    var gps = this.state.GPs;
+    let gps = this.state.GPs;
     for (var i = 0; i < gps.length; i++) {
-      gps[i].params[1] = newVal;
+      const gp = gps[i];
+      console.log(newVal);
+      gps[i] = new GP(gps[i].cf, [gp.params[0], newVal], gp.id, [], [], [])
     }
-    this.setState({GPs: gps});
+    this.setState({newGPNoise: newVal, GPs: gps});
   }
 
   setNewGPcf(event) { 
-    this.setState({ newGPcf: event.target.value }); 
     var gps = this.state.GPs;
     for (var i = 0; i < gps.length; i++) {
       console.log(this.state.newGPcf);
-      gps[i] = new GP(this.state.newGPcf, 
+      gps[i] = new GP(event.target.value, 
       [this.state.newGPParam, this.state.newGPNoise], gps[i].id,
        this.state.dmTr, this.state.dmTeTr, this.state.trPointsY);
     }
-    this.setState({GPs: gps});
+    this.setState({newGPcf: event.target.value, GPs: gps});
   }
 
   addGP() {
@@ -101,9 +109,6 @@ class GPApp extends React.Component {
     }).bind(this);
   }
 
-  handleHover() {
-    console.log("Foo");
-  }
   addTrPoint(x, y) {
     if (x >= -5 && x <= 5 && y >= -3 && y <= 3){
       var newTrPointsX = this.state.trPointsX.concat([x]);
@@ -127,20 +132,24 @@ class GPApp extends React.Component {
     var gpoptions = cfs.map(function (c) {
       return (<option key={c.id} value={c.id}>{c.name}</option>);
     });
+
     if (this.props.ty == 'lengthscales' ) {
-      var w = <div>Length scale<Slider value={this.state.newGPParam} setValue={this.setNewGPParam.bind(this)} opt={sliderOptGPParam} /> {this.state.newGPParam.toFixed(2)}</div>
+      var w = <div>Length scale <Slider value={this.state.newGPParam} setValue={this.setNewGPParam.bind(this)} opt={sliderOptGPParam} /> 
+                  {this.state.newGPParam.toFixed(2)}
+              </div>
     } else if (this.props.ty == 'noise') {
-      var w = <div>Noise<Slider value={this.state.newGPNoise} setValue={this.setNewGPNoise.bind(this)} opt={sliderOptGPNoise} /> {this.state.newGPNoise.toFixed(2)}</div>
+      var w = <div>Noise <Slider value={this.state.newGPNoise} setValue={this.setNewGPNoise.bind(this)} opt={sliderOptGPNoise} /> {this.state.newGPNoise.toFixed(2)}</div>
     } else { // fallback to covariance
-      var w = <div>Covariance function<select value={this.state.newGPcf} onChange={this.setNewGPcf.bind(this)}>{gpoptions}</select></div>
+      var w = <div>Covariance function <select value={this.state.newGPcf} onChange={this.setNewGPcf.bind(this)}>{gpoptions}</select></div>
     }
     return (
-      <div id="gp" onMouseEnter={this.startContinuousSampling.bind(this)} onMouseLeave={this.stopSampling.bind(this)}>
+      <div id="gp" onMouseEnter={this.startContinuousSampling.bind(this)} 
+                   onMouseLeave={this.stopSampling.bind(this)}>
         <div id="gplist">
           <div id="addgp">  
           <div> 
           {w} 
-          <button onClick={this.addGP.bind(this)} disabled={this.state.newGPavailableIDs.length <= 0}>add</button> 
+          {/* <button onClick={this.addGP.bind(this)} disabled={this.state.newGPavailableIDs.length <= 0}>add</button>  */}
           </div>
         </div>
         <div className="l-screen">

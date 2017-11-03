@@ -149,7 +149,6 @@ function recomputeProjections(GPs, dmTr, dmTeTr, trY) {
   for (var gpi = 0; gpi < GPs.length; gpi++){
     var gp = GPs[gpi];
     var tmp = computeProjection(gp.Kte, gp.cf, gp.params, dmTr, dmTeTr, trY);
-    // console.log(gp.params[0]);
     gp.Kte = cfs[gp.cf].f(distmatTe, gp.params);
     gp.proj = tmp.proj;
     gp.mu = tmp.mu;
@@ -170,12 +169,18 @@ function computeDistanceMatrix(xdata1, xdata2) {
   return dm;
 }
 
-var GPAxis = createReactClass({
-  render: function() {
+class GPAxis extends React.Component {
+  constructor(props) {
+    super(props);
+    this.scales = { x: null, y: null };
+    this.animationId = 0;
+
+  }
+  render() {
     return (<svg></svg>);
-  },
-  shouldComponentUpdate: function() { return false; },
-  drawTrPoints: function(pointsX, pointsY) {
+  }
+  shouldComponentUpdate() { return false; }
+  drawTrPoints(pointsX, pointsY) {
     var x = this.scales.x; 
     var y = this.scales.y;
     var p = this.trPoints.selectAll("circle.trpoints")
@@ -188,9 +193,8 @@ var GPAxis = createReactClass({
              .attr("cx", function(d) { return x(d[0]); })
              .attr("cy", function(d) { return y(d[1]); });
     p.exit().remove();
-  },
-  animationId: 0,
-  componentWillReceiveProps: function(props) {
+  }
+  componentWillReceiveProps(props) {
     // bind events
     if (props.state.addTrPoints) {
       d3.select(ReactDOM.findDOMNode(this)).on("click", this.addTrPoint);
@@ -200,10 +204,9 @@ var GPAxis = createReactClass({
     // redraw training points
     this.drawTrPoints(props.state.trPointsX, props.state.trPointsY);
 
-    this.drawMeanAndVar(props);
 
     if (this.props.state.showSamples !== props.state.showSamples){
-      this.drawPaths(props);
+       this.drawPaths(props);
     }
 
     if (this.props.state.samplingState !== props.state.samplingState){
@@ -214,33 +217,31 @@ var GPAxis = createReactClass({
         this.animationId = setInterval((function() { this.contUpdateState(); this.drawPaths(); }).bind(this), 50);
       }
     }
-  },
-  addTrPoint: function() {
+  }
+  addTrPoint() {
     var mousePos = d3.mouse(ReactDOM.findDOMNode(this));
     var x = this.scales.x;
     var y = this.scales.y;
 
     // x is transformed to a point on a grid of 200 points between -5 and 5
     this.props.addTrPoint(Math.round((x.invert(mousePos[0]-50)+5)/10*199)/199*10-5, y.invert(mousePos[1]-50));
-  },
-  updateState: function() {
+  }
+  updateState() {
     var M = numeric.dim(distmatTe)[1];
-    this.props.state.GPs = recomputeProjections(this.props.state.GPs, 
-      this.props.state.dmTr, this.props.state.dmTeTr, this.props.state.trPointsY);
     for (var i = 0; i < this.props.state.GPs.length; i++){
       var gp = this.props.state.GPs[i];
       gp.z = randnArray(M);
     }
-  },
-  stepState: 0,
-  contUpdateState: function() {
-    this.props.state.GPs = recomputeProjections(this.props.state.GPs, 
-      this.props.state.dmTr, this.props.state.dmTeTr, this.props.state.trPointsY);
+  }
+  // stepState: 0;
+  contUpdateState() {
     var M = numeric.dim(distmatTe)[1];
     var alfa = 1.0-this.props.state.alfa;
     var n_steps = this.props.state.NSteps;
     var t_step = this.props.state.stepSize / n_steps;
     this.stepState = this.stepState % n_steps;
+
+    this.drawMeanAndVar(this.props);
 
     for (var i = 0; i < this.props.state.GPs.length; i++){
       var gp = this.props.state.GPs[i];
@@ -258,8 +259,8 @@ var GPAxis = createReactClass({
       gp.p = numeric.add(numeric.mul(c, Math.sin(t_step)), numeric.mul(d, Math.cos(t_step)));
     }
     this.stepState = this.stepState + 1;
-  },
-  drawMeanAndVar: function(props) {
+  }
+  drawMeanAndVar(props) {
     var gpline = this.gpline;
     if (props.state.showMeanAndVar){
       var gps = props.state.GPs;
@@ -308,8 +309,8 @@ var GPAxis = createReactClass({
                                    return "sdline line line"+d.id;
                                  });
     pathsDown.exit().remove();
-  },
-  drawPaths: function(props) {
+  }
+  drawPaths(props) {
     if (!props) var props = this.props;
     var gpline = this.gpline;
     if (props.state.showSamples){
@@ -331,9 +332,9 @@ var GPAxis = createReactClass({
                                    return "line line"+d.id;
                                  });
     paths.exit().remove();
-  },
-  scales: { x: null, y: null },
-  componentDidMount: function() {
+  }
+
+  componentDidMount() {
     var svg = d3.select(ReactDOM.findDOMNode(this));
     var height = svg.attr("height"),
         width  = svg.attr("width");
@@ -387,11 +388,10 @@ var GPAxis = createReactClass({
     this.drawTrPoints(this.props.state.trPointsX, this.props.state.trPointsY);
     this.drawPaths();
   }
-});
+}
 
-
-var GPList = createReactClass({
-  render: function() {
+class GPList extends React.Component {
+  render() {
     var delGP = this.props.delGP;
     var gplist = this.props.GPs.map(function (gp) {
       return (<tr key={gp.id}>
@@ -404,4 +404,6 @@ var GPList = createReactClass({
     </thead>
     <tbody>{gplist}</tbody></table>);
   }
-});
+}
+
+export {GP, GPAxis, GPList, cfs, tePointsX, randn};

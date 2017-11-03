@@ -1,11 +1,11 @@
-var Slider = createReactClass({
-  render: function() {
+export default class Slider extends React.Component {
+  render() {
     // Just insert the svg-element and render rest in componentDidMount.
     // Marker location is updated in componentWillReceiveProps using d3.
     return (<svg></svg>);
-  },
-  shouldComponentUpdate: function() { return false; }, // Never re-render.
-  componentDidMount: function() {
+  }
+  shouldComponentUpdate() { return false; } // Never re-render.
+  componentDidMount() {
     var val = this.props.value;
     var setVal = this.props.setValue;
     var opt = this.props.opt;
@@ -65,12 +65,11 @@ var Slider = createReactClass({
                      .datum(val)
                      .attr("cx", function (d) { return scale(d); })
                      .call(drag);
-  },
-  componentWillReceiveProps: function(props) {
+  }
+  componentWillReceiveProps(props) {
     // update the marker location on receiving new props
     var scale = this.scale;
     this.marker.datum(props.value)
                .attr("cx", function (d) { return scale(d); });
   }
-});
-
+}
