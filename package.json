@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Gaussian process regression demo in Javascript ==============================================",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
@@ -17,7 +18,8 @@
   "homepage": "https://github.com/to-mi/gp-demo-js#readme",
   "dependencies": {
     "react": "^16.0.0",
-    "react-dom": "^16.0.0"
+    "react-dom": "^16.0.0",
+    "webpack-dev-server": "^2.9.4"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -27,6 +29,8 @@
     "babelify": "^8.0.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.0",
-    "webpack": "^3.8.1"
+    "gulp-util": "^3.0.8",
+    "webpack": "^3.8.1",
+    "webpack-stream": "^4.0.0"
   }
 }

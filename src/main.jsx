@@ -1,11 +1,11 @@
-import GPApp from "./gpapp";
+import GPApp from "./gpapp.jsx";
 
 const comp0 = ReactDOM.render(
   <GPApp ty="lengthscales" caption="different length scales"/>,
   document.getElementById('gp-lengthscales')
 );
 
-for (var i=0; i < 5; ++i) {
+for (var i = 0; i < 5; ++i) {
   comp0.addGP();
 }
 
@@ -14,7 +14,7 @@ const comp1 = ReactDOM.render(
   document.getElementById('gp-noise')
 );
 
-for (var i=0; i < 5; ++i) {
+for (var i = 0; i < 5; ++i) {
   comp1.addGP();
 }
 
@@ -24,6 +24,8 @@ const comp2 = ReactDOM.render(
   document.getElementById('gp-covariance')
 );
 
-for (var i=0; i < 5; ++i) {
+for (var i = 0; i < 5; ++i) {
   comp2.addGP();
 }
+
+console.log('All loaded');

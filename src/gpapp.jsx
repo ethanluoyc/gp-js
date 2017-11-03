@@ -1,5 +1,5 @@
-import {GP, GPAxis, cfs} from "./gputils";
-import Slider from "./slider";
+import {GP, GPAxis, cfs} from "./gputils.jsx";
+import Slider from "./slider.jsx";
 
 export default class GPApp extends React.Component {
   constructor(props) {
@@ -165,9 +165,9 @@ export default class GPApp extends React.Component {
             <br />
             <button onClick={this.stopSampling.bind(this)} disabled={this.state.samplingState === 0 || this.state.addTrPoints}>stop sampling</button>
             <br />
-            {this.state.addTrPoints ? <span className="info"> click on the figure to add an observation </span> : ''}
-            <button onClick={this.toggleAddTrPoints.bind(this)}>{this.state.addTrPoints ? "done" : "add observations"}</button>
-            {this.state.addTrPoints ? <button onClick={this.clearTrPoints.bind(this)}>clear</button> : ''}
+            {/*{this.state.addTrPoints ? <span className="info"> click on the figure to add an observation </span> : ''}*/}
+            {/*<button onClick={this.toggleAddTrPoints.bind(this)}>{this.state.addTrPoints ? "done" : "add observations"}</button>*/}
+            {/*{this.state.addTrPoints ? <button onClick={this.clearTrPoints.bind(this)}>clear</button> : ''}*/}
           </div>
           <GPAxis state={this.state} addTrPoint={this.addTrPoint.bind(this)} />
           <figcaption>{this.props.caption}</figcaption>
