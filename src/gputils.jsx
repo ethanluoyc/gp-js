@@ -174,7 +174,7 @@ class GPAxis extends React.Component {
     super(props);
     this.scales = { x: null, y: null };
     this.animationId = 0;
-
+    this.stepState = 0;
   }
   render() {
     return (<svg></svg>);
@@ -204,9 +204,8 @@ class GPAxis extends React.Component {
     // redraw training points
     this.drawTrPoints(props.state.trPointsX, props.state.trPointsY);
 
-
     if (this.props.state.showSamples !== props.state.showSamples){
-       this.drawPaths(props);
+      this.drawPaths(props);
     }
 
     if (this.props.state.samplingState !== props.state.samplingState){
@@ -233,7 +232,7 @@ class GPAxis extends React.Component {
       gp.z = randnArray(M);
     }
   }
-  // stepState: 0;
+
   contUpdateState() {
     var M = numeric.dim(distmatTe)[1];
     var alfa = 1.0-this.props.state.alfa;
