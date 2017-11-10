@@ -1,5 +1,8 @@
+var React= require('react');
+var ReactDOM = require('react-dom');
+
 var tePointsX = numeric.linspace(-5, 5, numeric.dim(distmatTe)[0]);
-var randn = d3.random.normal();
+var randn = d3.randomNormal();
 function randnArray(size){
   var zs = new Array(size);
   for (var i = 0; i < size; i++) {
@@ -179,7 +182,7 @@ class GPAxis extends React.Component {
   render() {
     return (<svg></svg>);
   }
-  shouldComponentUpdate() { return false; }
+  // shouldComponentUpdate() { return true; }
   drawTrPoints(pointsX, pointsY) {
     var x = this.scales.x; 
     var y = this.scales.y;
@@ -203,6 +206,9 @@ class GPAxis extends React.Component {
     }
     // redraw training points
     this.drawTrPoints(props.state.trPointsX, props.state.trPointsY);
+
+    // redraw mean and variance if necessary
+    this.drawMeanAndVar(props);
 
     if (this.props.state.showSamples !== props.state.showSamples){
       this.drawPaths(props);
@@ -261,6 +267,7 @@ class GPAxis extends React.Component {
   }
   drawMeanAndVar(props) {
     var gpline = this.gpline;
+
     if (props.state.showMeanAndVar){
       var gps = props.state.GPs;
     } else {
@@ -308,7 +315,17 @@ class GPAxis extends React.Component {
                                    return "sdline line line"+d.id;
                                  });
     pathsDown.exit().remove();
+
+  //   // add the X Axis
+  //   svg.append("g")
+  //       .attr("transform", "translate(0," + height + ")")
+  //       .call(d3.axisBottom(x));
+
+  //   // // add the Y Axis
+  //   // svg.append("g")
+  //   //     .call(d3.axisLeft(y));
   }
+
   drawPaths(props) {
     if (!props) var props = this.props;
     var gpline = this.gpline;
@@ -353,21 +370,19 @@ class GPAxis extends React.Component {
         fig_width  = width  - 2*margin;
 
     // helper functions
-    var x = d3.scale.linear().range([0, fig_width]).domain([-5, 5]);
-    var y = d3.scale.linear().range([fig_height, 0]).domain([-3, 3]);
+    var x = d3.scaleLinear().range([0, fig_width]).domain([-5, 5]);
+    var y = d3.scaleLinear().range([fig_height, 0]).domain([-3, 3]);
     this.scales.x = x;
     this.scales.y = y;
-    var xAxis = d3.svg.axis()
-                      .scale(x)
-                      .ticks(5)
-                      .orient("bottom");
-    var yAxis = d3.svg.axis()
-                      .scale(y)
-                      .ticks(5)
-                      .orient("left");
-    this.gpline = d3.svg.line()
-                        .x(function(d) { return x(d[0]); })
-                        .y(function(d) { return y(d[1]); });
+    var xAxis = d3.axisBottom()
+                   .scale(x)
+                   .ticks(5)
+    var yAxis = d3.axisLeft()
+                  .scale(y)
+                  .ticks(5)
+    this.gpline = d3.line()
+                     .x(function(d) { return x(d[0]); })
+                     .y(function(d) { return y(d[1]); });
 
     // axes
     svg.append("g")
@@ -384,6 +399,7 @@ class GPAxis extends React.Component {
     this.downSd95Lines = svg.append("g");
     this.lines = svg.append("g");
     this.trPoints = svg.append("g");
+    this.valuelines = svg.append("g"); 
     this.drawTrPoints(this.props.state.trPointsX, this.props.state.trPointsY);
     this.drawPaths();
   }

@@ -1,3 +1,6 @@
+var React = require('react');
+var ReactDOM = require('react-dom');
+
 export default class Slider extends React.Component {
   render() {
     // Just insert the svg-element and render rest in componentDidMount.
@@ -34,7 +37,7 @@ export default class Slider extends React.Component {
     var x2 = opt.width - markerRadius;
 
     // d3 helpers
-    var scale = d3.scale.linear()
+    var scale = d3.scaleLinear()
                          .domain([opt.min, opt.max])
                          .range([x1, x2]);
     this.scale = scale;
@@ -44,7 +47,7 @@ export default class Slider extends React.Component {
     var dragmove = function() {
       setValFromMousePos(d3.event.x);
     };
-    var drag = d3.behavior.drag().on("drag", dragmove);
+    var drag = d3.drag().on("drag", dragmove);
 
     // bind d3 events and insert background line and marker
     var svg = d3.select(ReactDOM.findDOMNode(this));
@@ -52,12 +55,14 @@ export default class Slider extends React.Component {
        .attr("width", opt.width)
        .attr("height", opt.height)
        .on("click", function () { setValFromMousePos(d3.mouse(this)[0]); });
+
     svg.append("line")
        .attr("x1", x1)
        .attr("x2", x2)
        .attr("y1", "50%")
        .attr("y2", "50%")
        .attr("class", "sliderbg");
+
     this.marker = svg.append("circle")
                      .attr("cy", "50%")
                      .attr("r", markerRadius)

@@ -1,4 +1,5 @@
 import GPApp from "./gpapp.jsx";
+import {GP} from "./gputils.jsx"
 
 const comp0 = ReactDOM.render(
   <GPApp ty="lengthscales" caption="Different length scales"/>,
@@ -16,5 +17,4 @@ const comp2 = ReactDOM.render(
   document.getElementById('gp-covariance')
 );
 
-
-console.log('All loaded');
+cosnole.log('I get called from print.js!');

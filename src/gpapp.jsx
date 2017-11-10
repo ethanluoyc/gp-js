@@ -1,3 +1,5 @@
+const React = require('react');
+
 import {GP, GPAxis, cfs} from "./gputils.jsx";
 import Slider from "./slider.jsx";
 
@@ -6,10 +8,10 @@ export default class GPApp extends React.Component {
     super(props);
     const gps = [
       new GP(0, [1, 0.2], 1, [], [], []),
-      new GP(0, [1, 0.2], 2, [], [], []),
-      new GP(0, [1, 0.2], 3, [], [], []),
-      new GP(0, [1, 0.2], 4, [], [], []),
-      new GP(0, [1, 0.2], 5, [], [], [])
+      // new GP(0, [1, 0.2], 2, [], [], []),
+      // new GP(0, [1, 0.2], 3, [], [], []),
+      // new GP(0, [1, 0.2], 4, [], [], []),
+      // new GP(0, [1, 0.2], 5, [], [], [])
     ];
     this.state = {
       GPs: gps,
@@ -76,6 +78,7 @@ export default class GPApp extends React.Component {
   toggleShowMeanAndVar() {
     // if (!this.state.addTrPoints) 
     this.setState({showMeanAndVar: !this.state.showMeanAndVar});
+    this.forceUpdate();
   }
 
   toggleShowSamples() {
@@ -201,9 +204,12 @@ export default class GPApp extends React.Component {
           <div className="l-screen">
             <figure>
               <div id="controls">
-                {/* <input type="checkbox" checked={this.state.showMeanAndVar}
-                       onChange={this.toggleShowMeanAndVar.bind(this)}/>
-                Show mean and credible intervals */}
+                <input type="checkbox" 
+                  value="toggle"
+                  checked={this.state.showMeanAndVar}
+                  onChange={this.toggleShowMeanAndVar.bind(this)}
+                />
+                Show mean and credible intervals
                 <br/>
                 <br/>
                 {/*{this.state.addTrPoints ? <span className="info"> click on the figure to add an observation </span> : ''}*/}
