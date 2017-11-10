@@ -48,7 +48,7 @@ export default class Slider extends React.Component {
     var dragmove = function() {
       setValFromMousePos(d3.event.x);
     };
-    var drag = d3.drag().on("drag", dragmove);
+    var drag = d3.drag().on("end", dragmove);
 
     // bind d3 events and insert background line and marker
     var svg = d3.select(ReactDOM.findDOMNode(this));

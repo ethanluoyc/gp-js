@@ -70,7 +70,7 @@ d3.json("/data/grid.json", function (error, data) {
 
 });
 
-ReactDOM.render(
-  <GPApp ty="covariance" caption="Different covariance function"/>,
+const comp = ReactDOM.render(
+  <GPApp ty="lengthscales" caption=""/>,
   document.getElementById("gp")
 );

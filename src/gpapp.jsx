@@ -9,10 +9,6 @@ export default class GPApp extends React.Component {
     super(props);
     const gps = [
       new GP(0, [1, 0.2], 1, [], [], []),
-      // new GP(0, [1, 0.2], 2, [], [], []),
-      // new GP(0, [1, 0.2], 3, [], [], []),
-      // new GP(0, [1, 0.2], 4, [], [], []),
-      // new GP(0, [1, 0.2], 5, [], [], [])
     ];
     this.state = {
       GPs: gps,
@@ -30,7 +26,7 @@ export default class GPApp extends React.Component {
       dmTeTr: [],
       samplingState: 0, // 0 = stopped, 1 = discrete, 2 = continuous
       oldSamplingState: 0,
-      showSamples: true,
+      showSamples: false,
       showMeanAndVar: false
     };
   }
@@ -180,24 +176,24 @@ export default class GPApp extends React.Component {
     var gpoptions = cfs.map(function (c) {
       return (<option key={c.id} value={c.id}>{c.name}</option>);
     });
-
+    var control;
     if (this.props.ty == "lengthscales") {
-      var w = <div>Length scale <Slider value={this.state.newGPParam} setValue={this.setNewGPParam.bind(this)}
+      control = <div>Length scale <Slider value={this.state.newGPParam} setValue={this.setNewGPParam.bind(this)}
         opt={sliderOptGPParam}/>
       {this.state.newGPParam.toFixed(2)}
       </div>;
     } else if (this.props.ty == "noise") {
-      var w = <div>Noise <Slider value={this.state.newGPNoise} setValue={this.setNewGPNoise.bind(this)}
+      control = <div>Noise <Slider value={this.state.newGPNoise} setValue={this.setNewGPNoise.bind(this)}
         opt={sliderOptGPNoise}/> {this.state.newGPNoise.toFixed(2)}</div>;
     } else { // fallback to covariance
-      var w = <div>Covariance function <select value={this.state.newGPcf}
+      control = <div>Covariance function <select value={this.state.newGPcf}
         onChange={this.setNewGPcf.bind(this)}>{gpoptions}</select></div>;
     }
     return (
       <div id="gp">
         <div id="gplist">
           <div id="addgp">
-            <div>{w}</div>
+            <div>{control}</div>
             <button onClick={this.toggleSampling.bind(this)}>
               {this.state.samplingState == 0 ? "Start": "Stop"}
             </button>
