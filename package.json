@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/to-mi/gp-demo-js#readme",
   "dependencies": {
+    "numpy-loader": "^1.2.0",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
     "webpack-dev-server": "^2.9.4"
@@ -29,6 +30,8 @@
     "babel-preset-flow": "^6.23.0",
     "babel-preset-react": "^6.24.1",
     "babelify": "^8.0.0",
+    "eslint": "^4.10.0",
+    "eslint-plugin-react": "^7.4.0",
     "flow-bin": "^0.58.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.0",

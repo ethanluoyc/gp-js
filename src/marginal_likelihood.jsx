@@ -25,7 +25,7 @@ var color = d3.scaleLinear()
   .domain([0, 5])
   .interpolate(function () { return d3.interpolateYlGnBu; });
 
-d3.json("/grid.json", function (error, data) {
+d3.json("/data/grid.json", function (error, data) {
   if (error) throw error;
   var dt = new Array(100 * 100);
   for (var i = 0; i < 100; ++i) {
