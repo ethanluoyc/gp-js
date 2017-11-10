@@ -167,58 +167,57 @@ export default class GPApp extends React.Component {
   }
 
   render() {
-    var sliderOptAlfa = {width: 200, height: 9, min: 0, max: 1};
-    var sliderOptStepSize = {width: 200, height: 9, min: 0, max: 2 * Math.PI};
-    var sliderOptNSteps = {width: 200, height: 9, min: 1, max: 100, step: 1};
-    var sliderOptGPParam = {width: 200, height: 9, min: 0.01, max: 5};
-    var sliderOptGPNoise = {width: 200, height: 9, min: 0, max: 2};
-    var delGP = this.delGP;
-    var gpoptions = cfs.map(function (c) {
-      return (<option key={c.id} value={c.id}>{c.name}</option>);
-    });
-    var control;
-    if (this.props.ty == "lengthscales") {
-      control = <div>Length scale <Slider value={this.state.newGPParam} setValue={this.setNewGPParam.bind(this)}
-        opt={sliderOptGPParam}/>
-      {this.state.newGPParam.toFixed(2)}
-      </div>;
-    } else if (this.props.ty == "noise") {
-      control = <div>Noise <Slider value={this.state.newGPNoise} setValue={this.setNewGPNoise.bind(this)}
-        opt={sliderOptGPNoise}/> {this.state.newGPNoise.toFixed(2)}</div>;
-    } else { // fallback to covariance
-      control = <div>Covariance function <select value={this.state.newGPcf}
-        onChange={this.setNewGPcf.bind(this)}>{gpoptions}</select></div>;
-    }
-    return (
-      <div id="gp">
-        <div id="gplist">
-          <div id="addgp">
-            <div>{control}</div>
-            <button onClick={this.toggleSampling.bind(this)}>
-              {this.state.samplingState == 0 ? "Start": "Stop"}
-            </button>
-          </div>
-          <div className="l-screen">
-            <figure>
-              <div id="controls">
-                <input type="checkbox" 
-                  value="toggle"
-                  checked={this.state.showMeanAndVar}
-                  onChange={this.toggleShowMeanAndVar.bind(this)}
-                />
-                Show mean and credible intervals
-                <br/>
-                <br/>
-                {this.state.addTrPoints ? <span className="info"> click on the figure to add an observation </span> : ""}
-                <button onClick={this.toggleAddTrPoints.bind(this)}>{this.state.addTrPoints ? "done" : "add observations"}</button>
-                {this.state.addTrPoints ? <button onClick={this.clearTrPoints.bind(this)}>clear</button> : ""}
-              </div>
-              <GPAxis state={this.state} addTrPoint={this.addTrPoint.bind(this)}/>
-              <figcaption>{this.props.caption}</figcaption>
-            </figure>
-          </div>
-        </div>
-      </div>
-    );
+    // var sliderOptAlfa = {width: 200, height: 9, min: 0, max: 1};
+    // var sliderOptStepSize = {width: 200, height: 9, min: 0, max: 2 * Math.PI};
+    // var sliderOptNSteps = {width: 200, height: 9, min: 1, max: 100, step: 1};
+    // var sliderOptGPParam = {width: 200, height: 9, min: 0.01, max: 5};
+    // var sliderOptGPNoise = {width: 200, height: 9, min: 0, max: 2};
+    // var delGP = this.delGP;
+    // var gpoptions = cfs.map(function (c) {
+    //   return (<option key={c.id} value={c.id}>{c.name}</option>);
+    // });
+    // var control;
+    // if (this.props.ty == "lengthscales") {
+    //   control = <div>Length scale <Slider value={this.state.newGPParam} setValue={this.setNewGPParam.bind(this)}
+    //     opt={sliderOptGPParam}/>
+    //   {this.state.newGPParam.toFixed(2)}
+    //   </div>;
+    // } else if (this.props.ty == "noise") {
+    //   control = <div>Noise <Slider value={this.state.newGPNoise} setValue={this.setNewGPNoise.bind(this)}
+    //     opt={sliderOptGPNoise}/> {this.state.newGPNoise.toFixed(2)}</div>;
+    // } else { // fallback to covariance
+    //   control = <div>Covariance function <select value={this.state.newGPcf}
+    //     onChange={this.setNewGPcf.bind(this)}>{gpoptions}</select></div>;
+    // }
+    return (<GPAxis state={this.state} addTrPoint={this.addTrPoint.bind(this)}/>);
+    // <div id="gp">
+    //   <div id="gplist">
+    //     <div id="addgp">
+    //       <div>{control}</div>
+    //       <button onClick={this.toggleSampling.bind(this)}>
+    //         {this.state.samplingState == 0 ? "Start": "Stop"}
+    //       </button>
+    //     </div>
+    //     <div className="l-screen">
+    //       <figure>
+    //         <div id="controls">
+    //           <input type="checkbox" 
+    //             value="toggle"
+    //             checked={this.state.showMeanAndVar}
+    //             onChange={this.toggleShowMeanAndVar.bind(this)}
+    //           />
+    //         Show mean and credible intervals
+    //           <br/>
+    //           <br/>
+    //           {this.state.addTrPoints ? <span className="info"> click on the figure to add an observation </span> : ""}
+    //           <button onClick={this.toggleAddTrPoints.bind(this)}>{this.state.addTrPoints ? "done" : "add observations"}</button>
+    //           {this.state.addTrPoints ? <button onClick={this.clearTrPoints.bind(this)}>clear</button> : ""}
+    //         </div>
+    //         <GPAxis state={this.state} addTrPoint={this.addTrPoint.bind(this)}/>
+    //         <figcaption>{this.props.caption}</figcaption>
+    //       </figure>
+    //     </div>
+    //   </div>
+    // </div>);
   }
 }

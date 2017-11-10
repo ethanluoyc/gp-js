@@ -1,12 +1,26 @@
 var React = require("react");
 var ReactDOM = require("react-dom");
-import {GP, tePointsX,
+import {GP, tePointsX, cfs,
   computeDistanceMatrix, recomputeProjections} from "./gputils.jsx";
 import GPApp from "./gpapp.jsx";
+import Slider from "./slider.jsx";
 
 class GPAddObservationAPP extends GPApp {
   constructor(props) {
     super(props);
+  }
+
+  setNewGPNoise(newVal) {
+    let gps = this.state.GPs;
+    for (var i = 0; i < gps.length; i++) {
+      const gp = gps[i];
+      var newTrPointsX = this.state.trPointsX;
+      var newTrPointsY = this.state.trPointsY;
+      var dmTr = computeDistanceMatrix(newTrPointsX, newTrPointsX);
+      var dmTeTr = computeDistanceMatrix(tePointsX, newTrPointsX);
+      gps[i] = new GP(gps[i].cf, [gp.params[0], newVal], gp.id, dmTr, dmTeTr, newTrPointsY);
+    }
+    this.setState({newGPNoise: newVal, GPs: gps});
   }
 
   setNewGPParam(newVal) {
@@ -44,10 +58,49 @@ class GPAddObservationAPP extends GPApp {
     }
   }
 
+  render() {
+    var sliderOptGPParam = {width: 200, height: 9, min: 0.01, max: 5};
+    var sliderOptGPNoise = {width: 200, height: 9, min: 0, max: 2};
+    const app = super.render();
+    
+    return(
+      <div id="gp">
+        <div id="gplist">
+          <div id="addgp">
+            <div>
+              <div>Length scale <Slider value={this.state.newGPParam} setValue={this.setNewGPParam.bind(this)}
+                opt={sliderOptGPParam}/>{this.state.newGPParam.toFixed(2)}
+              </div>
+              <div>Noise <Slider value={this.state.newGPNoise} setValue={this.setNewGPNoise.bind(this)}
+                opt={sliderOptGPNoise}/> {this.state.newGPNoise.toFixed(2)}</div>
+            </div>
+          </div>
+          <div className="l-screen">
+            <figure>
+              <div id="controls">
+                <input type="checkbox" 
+                  value="toggle"
+                  checked={this.state.showMeanAndVar}
+                  onChange={this.toggleShowMeanAndVar.bind(this)}
+                /> Show mean and credible intervals
+                <br/>
+                <br/>
+                {this.state.addTrPoints ? <span className="info"> click on the figure to add an observation </span> : ""}
+                <button onClick={this.toggleAddTrPoints.bind(this)}>{this.state.addTrPoints ? "done" : "add observations"}</button>
+                {this.state.addTrPoints ? <button onClick={this.clearTrPoints.bind(this)}>clear</button> : ""}
+              </div>
+              {app}
+              <figcaption>{this.props.caption}</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>);
+  }
+
 }
 
 const comp = ReactDOM.render(
-  <GPAddObservationAPP ty="lengthscales" caption="Different covariance function"/>,
+  <GPAddObservationAPP/>,
   document.getElementById("gp")
 );
 
