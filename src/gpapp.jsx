@@ -1,7 +1,7 @@
-/* eslint-disable */
 const React = require("react");
 
-import {GP, GPAxis, cfs} from "./gputils.jsx";
+import {GP, GPAxis, cfs, computeDistanceMatrix,
+  recomputeProjections, tePointsX} from "./gputils.jsx";
 import Slider from "./slider.jsx";
 
 export default class GPApp extends React.Component {
@@ -96,7 +96,7 @@ export default class GPApp extends React.Component {
     let gps = this.state.GPs;
     for (var i = 0; i < gps.length; i++) {
       const gp = gps[i];
-      gps[i] = new GP(gps[i].cf, [newVal, gp.params[1]], gp.id, [], [], [])
+      gps[i] = new GP(gps[i].cf, [newVal, gp.params[1]], gp.id, [], [], []);
     }
     this.setState({newGPParam: newVal, GPs: gps});
   }
@@ -105,7 +105,7 @@ export default class GPApp extends React.Component {
     let gps = this.state.GPs;
     for (var i = 0; i < gps.length; i++) {
       const gp = gps[i];
-      gps[i] = new GP(gps[i].cf, [gp.params[0], newVal], gp.id, [], [], [])
+      gps[i] = new GP(gps[i].cf, [gp.params[0], newVal], gp.id, [], [], []);
     }
     this.setState({newGPNoise: newVal, GPs: gps});
   }
@@ -183,15 +183,15 @@ export default class GPApp extends React.Component {
 
     if (this.props.ty == "lengthscales") {
       var w = <div>Length scale <Slider value={this.state.newGPParam} setValue={this.setNewGPParam.bind(this)}
-                                        opt={sliderOptGPParam}/>
-        {this.state.newGPParam.toFixed(2)}
-      </div>
+        opt={sliderOptGPParam}/>
+      {this.state.newGPParam.toFixed(2)}
+      </div>;
     } else if (this.props.ty == "noise") {
       var w = <div>Noise <Slider value={this.state.newGPNoise} setValue={this.setNewGPNoise.bind(this)}
-                                 opt={sliderOptGPNoise}/> {this.state.newGPNoise.toFixed(2)}</div>
+        opt={sliderOptGPNoise}/> {this.state.newGPNoise.toFixed(2)}</div>;
     } else { // fallback to covariance
       var w = <div>Covariance function <select value={this.state.newGPcf}
-                                               onChange={this.setNewGPcf.bind(this)}>{gpoptions}</select></div>
+        onChange={this.setNewGPcf.bind(this)}>{gpoptions}</select></div>;
     }
     return (
       <div id="gp">
@@ -213,9 +213,9 @@ export default class GPApp extends React.Component {
                 Show mean and credible intervals
                 <br/>
                 <br/>
-                {/*{this.state.addTrPoints ? <span className="info"> click on the figure to add an observation </span> : ''}*/}
-                {/*<button onClick={this.toggleAddTrPoints.bind(this)}>{this.state.addTrPoints ? "done" : "add observations"}</button>*/}
-                {/*{this.state.addTrPoints ? <button onClick={this.clearTrPoints.bind(this)}>clear</button> : ''}*/}
+                {this.state.addTrPoints ? <span className="info"> click on the figure to add an observation </span> : ""}
+                <button onClick={this.toggleAddTrPoints.bind(this)}>{this.state.addTrPoints ? "done" : "add observations"}</button>
+                {this.state.addTrPoints ? <button onClick={this.clearTrPoints.bind(this)}>clear</button> : ""}
               </div>
               <GPAxis state={this.state} addTrPoint={this.addTrPoint.bind(this)}/>
               <figcaption>{this.props.caption}</figcaption>
@@ -223,6 +223,6 @@ export default class GPApp extends React.Component {
           </div>
         </div>
       </div>
-    )
+    );
   }
 }

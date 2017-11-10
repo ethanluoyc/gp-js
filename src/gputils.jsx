@@ -184,7 +184,7 @@ class GPAxis extends React.Component {
   render() {
     return (<svg></svg>);
   }
-  // shouldComponentUpdate() { return true; }
+  shouldComponentUpdate() { return false; }
   drawTrPoints(pointsX, pointsY) {
     var x = this.scales.x; 
     var y = this.scales.y;
@@ -202,7 +202,7 @@ class GPAxis extends React.Component {
   componentWillReceiveProps(props) {
     // bind events
     if (props.state.addTrPoints) {
-      d3.select(ReactDOM.findDOMNode(this)).on("click", this.addTrPoint);
+      d3.select(ReactDOM.findDOMNode(this)).on("click", this.addTrPoint.bind(this));      
     } else {
       d3.select(ReactDOM.findDOMNode(this)).on("click", null);
     }
@@ -317,15 +317,7 @@ class GPAxis extends React.Component {
                                    return "sdline line line"+d.id;
                                  });
     pathsDown.exit().remove();
-
-  //   // add the X Axis
-  //   svg.append("g")
-  //       .attr("transform", "translate(0," + height + ")")
-  //       .call(d3.axisBottom(x));
-
-  //   // // add the Y Axis
-  //   // svg.append("g")
-  //   //     .call(d3.axisLeft(y));
+    
   }
 
   drawPaths(props) {
@@ -423,5 +415,9 @@ class GPList extends React.Component {
   }
 }
 
-export {GP, GPAxis, GPList, cfs, tePointsX, randn};
-/* eslint-enable */
+export {GP, GPAxis, GPList, 
+        cfs, 
+        tePointsX, 
+        randn, 
+        computeDistanceMatrix, 
+        recomputeProjections};
