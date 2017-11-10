@@ -1,5 +1,7 @@
-var React= require('react');
-var ReactDOM = require('react-dom');
+/* eslint-disable */
+
+var React= require("react");
+var ReactDOM = require("react-dom");
 
 var tePointsX = numeric.linspace(-5, 5, numeric.dim(distmatTe)[0]);
 var randn = d3.randomNormal();
@@ -422,3 +424,4 @@ class GPList extends React.Component {
 }
 
 export {GP, GPAxis, GPList, cfs, tePointsX, randn};
+/* eslint-enable */

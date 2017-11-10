@@ -1,4 +1,5 @@
-const React = require('react');
+/* eslint-disable */
+const React = require("react");
 
 import {GP, GPAxis, cfs} from "./gputils.jsx";
 import Slider from "./slider.jsx";
@@ -180,12 +181,12 @@ export default class GPApp extends React.Component {
       return (<option key={c.id} value={c.id}>{c.name}</option>);
     });
 
-    if (this.props.ty == 'lengthscales') {
+    if (this.props.ty == "lengthscales") {
       var w = <div>Length scale <Slider value={this.state.newGPParam} setValue={this.setNewGPParam.bind(this)}
                                         opt={sliderOptGPParam}/>
         {this.state.newGPParam.toFixed(2)}
       </div>
-    } else if (this.props.ty == 'noise') {
+    } else if (this.props.ty == "noise") {
       var w = <div>Noise <Slider value={this.state.newGPNoise} setValue={this.setNewGPNoise.bind(this)}
                                  opt={sliderOptGPNoise}/> {this.state.newGPNoise.toFixed(2)}</div>
     } else { // fallback to covariance

@@ -1,11 +1,16 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/main.jsx',
+  entry: {
+    main: './src/main.jsx',
+    optim: './src/gp_optim.jsx',
+    axis: './src/axis.jsx'
+  },
   output: {
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'dist')
   },
+  devtool: 'inline-source-map',
   module: {
     loaders: [
       { test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ },
