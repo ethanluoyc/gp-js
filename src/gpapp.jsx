@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const React = require("react");
 
 import {GP, GPAxis, cfs, computeDistanceMatrix,
