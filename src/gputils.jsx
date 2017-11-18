@@ -349,14 +349,14 @@ class GPAxis extends React.Component {
     var height = svg.attr("height"),
         width  = svg.attr("width");
     if (!height) {
-      height = 300;
+      height = 350;
       svg.attr("height", height);
     }
     if (!width) {
       width = 500;
       svg.attr("width", width);
     }
-    var margin = 50;
+    var margin = 30;
     svg = svg.append("g")
              .attr("transform", "translate("+margin+","+margin+")");
     this.svg = svg;

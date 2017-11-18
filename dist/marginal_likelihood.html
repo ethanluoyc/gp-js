@@ -8,10 +8,20 @@
 <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <script src="/distancematrix.js"></script>
 <style> /* set the CSS */
+#contour {
+  position: absolute;
+}
+
+#gp-foo {
+  position: absolute;
+  left: 420px;
+  margin: 0px;
+}
+
 </style>
 
 <body>
-  <svg width="430" height="430" stroke="#fff" stroke-width="0.5"></svg>  
+  <div id="contour"><svg width="400" height="400"></svg></div>
   <div id="gp"></div>
 </body>
 

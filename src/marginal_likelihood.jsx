@@ -15,8 +15,8 @@ const svg = d3.select("svg");
 let width = +svg.attr("width");
 let height = +svg.attr("height");
 
-width = 400;
-height = 400;
+width = 370;
+height = 370;
 
 const thresholds = d3.range(1, 21)
   .map(p => Math.pow(2, p));
@@ -25,9 +25,10 @@ const contours = d3.contours()
   .size([100, 100])
   .thresholds(numeric.linspace(1.2126317839226641 * 1.0001, 2.4, 20));
 
+// https://github.com/d3/d3-scale-chromatic
 const color = d3.scaleLinear()
-  .domain([0, 5])
-  .interpolate(() => d3.interpolateYlGnBu);
+  .domain([1.2126317839226641, 2.4])
+  .interpolate(() => d3.interpolateSpectral);
 
 const x = d3.scaleLinear()
   .domain([-2, 1])
@@ -40,6 +41,8 @@ const y = d3.scaleLinear()
 const xAxis = d3.axisBottom(x).ticks(10);
 const yAxis = d3.axisLeft(y).ticks(10);
 
+var circle = null;
+
 d3.json("/data/grid.json", (error, data) => {
   if (error) throw error;
   const dt = new Array(100 * 100);
@@ -49,7 +52,6 @@ d3.json("/data/grid.json", (error, data) => {
     }
   }
 
-
   svg.append("g")
     .attr("transform", "translate(30, 0)")
     .selectAll("path")
@@ -57,7 +59,7 @@ d3.json("/data/grid.json", (error, data) => {
     .enter()
     .append("path")
     .attr("d", d3.geoPath(d3.geoIdentity().scale(width / n)))
-    .attr("fill", (d) => color(d.value));
+    .attr("fill", d => color(d.value));
 
   svg.append("g")
     .attr("class", "axis axis-y")
@@ -66,8 +68,21 @@ d3.json("/data/grid.json", (error, data) => {
 
   svg.append("g")
     .attr("class", "axis axis-x")
-    .attr("transform", `translate(30,${height })`)
+    .attr("transform", `translate(30,${height})`)
     .call(xAxis);
+
+  // Draw the Ellipse
+  circle = svg.append("g")
+    .attr("transform", "translate(100,100)");
+
+  circle.append("ellipse")
+    .attr("fill-opacity", 0)
+    .attr("stroke-width", 2)
+    .attr("stroke", "black")
+    .attr("cx", 0)
+    .attr("cy", 0)
+    .attr("rx", 10)
+    .attr("ry", 10);
 });
 
 class GPMarginalLikelihoodApp extends GPApp {
@@ -132,7 +147,7 @@ class GPMarginalLikelihoodApp extends GPApp {
     const app = super.render();
 
     return (
-      <div id="gp">
+      <div id="gp-foo">
         <div id="gplist">
           <div id="addgp">
             <div>
@@ -143,7 +158,7 @@ class GPMarginalLikelihoodApp extends GPApp {
               />{this.state.newGPParam.toFixed(2)}
               </div>
               <div>Noise <Slider
-                                value={this.state.newGPNoise}
+                value={this.state.newGPNoise}
                 setValue={this.setNewGPNoise.bind(this)}
                 opt={sliderOptGPNoise}
               /> {this.state.newGPNoise.toFixed(2)}
@@ -151,24 +166,17 @@ class GPMarginalLikelihoodApp extends GPApp {
             </div>
           </div>
           <div className="l-screen">
-            <figure>
               <div id="controls">
                 <input
-                                    type="checkbox"
+                  type="checkbox"
                   value="toggle"
                   checked={this.state.showMeanAndVar}
                   onChange={this.toggleShowMeanAndVar.bind(this)}
                 />
             Show mean and credible intervals
                 <br />
-                <br />
-                {this.state.addTrPoints ? <span className="info"> click on the figure to add an observation </span> : ""}
-                <button onClick={this.toggleAddTrPoints.bind(this)}>{this.state.addTrPoints ? "done" : "add observations"}</button>
-                {this.state.addTrPoints ? <button onClick={this.clearTrPoints.bind(this)}>clear</button> : ""}
               </div>
               {app}
-              <figcaption>{this.props.caption}</figcaption>
-            </figure>
           </div>
         </div>
       </div>);
@@ -192,6 +200,7 @@ function mousemove(d) {
   const position = d3.mouse(this);
   console.log(`log-noise ${x.invert(position[0])}`);
   console.log(`log-lengthscale ${y.invert(position[1])}`);
+  circle.attr("transform", `translate(${position[0]}, ${position[1]})`);
   comp.setNewGPParam(x.invert(position[0]));
   comp.setNewGPParam(y.invert(position[1]));
 }
