@@ -9,10 +9,17 @@ import Slider from "./slider.jsx";
 export default class GPApp extends React.Component {
   constructor(props) {
     super(props);
+  }
+
+  initialize() {
+    this.state = GPApp.getDefaultState();
+  }
+
+  static getDefaultState() {
     const gps = [
       new GP(0, [1, 0.2], 1, [], [], []),
     ];
-    this.state = {
+    return {
       GPs: gps,
       newGPParam: 1.0,
       newGPNoise: 0.2,
@@ -32,7 +39,6 @@ export default class GPApp extends React.Component {
       showMeanAndVar: false
     };
   }
-
 
   setAlfa(newVal) {
     this.setState({alfa: newVal});

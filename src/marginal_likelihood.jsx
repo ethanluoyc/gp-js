@@ -1,14 +1,11 @@
+import { GP, GPAxis, tePointsX, computeDistanceMatrix, recomputeProjections } from "./gputils.jsx";
+import GPApp from "./gpapp.jsx";
+import Slider from "./slider.jsx";
+
 const React = require("react");
 const ReactDOM = require("react-dom");
 
-import { GP, GPAxis } from "./gputils.jsx";
-import GPApp from "./gpapp.jsx";
-import { tePointsX,
-  computeDistanceMatrix, recomputeProjections } from "./gputils.jsx";
-import Slider from "./slider.jsx";
-
 const n = 100;
-const m = 100;
 const padding = 30;
 
 const svg = d3.select("svg");
@@ -41,14 +38,14 @@ const y = d3.scaleLinear()
 const xAxis = d3.axisBottom(x).ticks(10);
 const yAxis = d3.axisLeft(y).ticks(10);
 
-var circle = null;
+let circle = null;
 
 d3.json("/data/grid.json", (error, data) => {
   if (error) throw error;
   const dt = new Array(100 * 100);
-  for (let i = 0; i < 100; ++i) {
-    for (let j = 0; j < 100; ++j) {
-      dt[i * 100 + j] = Math.abs(data[i][j]);
+  for (let i = 0; i < 100; i += 1) {
+    for (let j = 0; j < 100; j += 1) {
+      dt[(i * 100) + j] = Math.abs(data[i][j]);
     }
   }
 
@@ -88,11 +85,18 @@ d3.json("/data/grid.json", (error, data) => {
 class GPMarginalLikelihoodApp extends GPApp {
   constructor(props) {
     super(props);
+    this.initialize();
+  }
+
+  initialize() {
+    const state = GPApp.getDefaultState();
+    state.showMeanAndVar = true;
+    this.state = state;
   }
 
   setNewGPNoise(newVal) {
     const gps = this.state.GPs;
-    for (let i = 0; i < gps.length; i++) {
+    for (let i = 0; i < gps.length; i += 1) {
       const gp = gps[i];
       const newTrPointsX = this.state.trPointsX;
       const newTrPointsY = this.state.trPointsY;
@@ -105,7 +109,7 @@ class GPMarginalLikelihoodApp extends GPApp {
 
   setNewGPParam(newVal) {
     const gps = this.state.GPs;
-    for (let i = 0; i < gps.length; i++) {
+    for (let i = 0; i < gps.length; i += 1) {
       const gp = gps[i];
 
       const newTrPointsX = this.state.trPointsX;
@@ -165,18 +169,8 @@ class GPMarginalLikelihoodApp extends GPApp {
               </div>
             </div>
           </div>
-          <div className="l-screen">
-              <div id="controls">
-                <input
-                  type="checkbox"
-                  value="toggle"
-                  checked={this.state.showMeanAndVar}
-                  onChange={this.toggleShowMeanAndVar.bind(this)}
-                />
-            Show mean and credible intervals
-                <br />
-              </div>
-              {app}
+          <div className="gp-axis">
+            {app}
           </div>
         </div>
       </div>);
@@ -189,14 +183,12 @@ const comp = ReactDOM.render(
 );
 
 d3.json("/data/dataset.json", (data) => {
-  const X = data.X;
-  const Y = data.Y;
-  for (let i = 0; i < X.length; ++i) {
-    comp.addTrPoint(X[i], Y[i]);
+  for (let i = 0; i < data.X.length; i += 1) {
+    comp.addTrPoint(data.X[i], data.Y[i]);
   }
 });
 
-function mousemove(d) {
+function mousemove() {
   const position = d3.mouse(this);
   console.log(`log-noise ${x.invert(position[0])}`);
   console.log(`log-lengthscale ${y.invert(position[1])}`);
