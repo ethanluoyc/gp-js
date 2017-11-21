@@ -9,15 +9,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/to-mi/gp-demo-js.git"
+    "url": "git+https://github.com/ethanluoyc/gp-js.git"
   },
-  "author": "Luo Yicheng <ethanluoyc@gmail.com> (ethanluoyc.github.io)",
+  "author": [
+    "Luo Yicheng <ethanluoyc@gmail.com> (ethanluoyc.github.io)"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/to-mi/gp-demo-js/issues"
+    "url": "https://github.com/ethanluoyc/gp-js/issues"
   },
-  "homepage": "https://github.com/to-mi/gp-demo-js#readme",
+  "homepage": "https://github.com/ethanluoyc/gp-js#readme",
   "dependencies": {
+    "d3-colorbar": "0.0.1",
     "numpy-loader": "^1.2.0",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
@@ -25,12 +28,17 @@
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
+    "babel-eslint": "^8.0.2",
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.1",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-react": "^6.24.1",
     "babelify": "^8.0.0",
-    "eslint": "^4.10.0",
+    "eslint": "^4.11.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-flowtype": "^2.39.1",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.2",
     "eslint-plugin-react": "^7.4.0",
     "flow-bin": "^0.58.0",
     "gulp": "^3.9.1",

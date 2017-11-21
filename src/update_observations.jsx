@@ -115,7 +115,7 @@ width: 200, height: 9, min: 0, max: 2
 
 const comp = ReactDOM.render(
   <GPAddObservationAPP />,
-  document.getElementById("gp"),
+  document.getElementById("gp-update-observations"),
 );
 
 d3.json("/data/dataset.json", (data) => {

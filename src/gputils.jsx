@@ -393,7 +393,7 @@ class GPAxis extends React.Component {
     this.downSd95Lines = svg.append("g");
     this.lines = svg.append("g");
     this.trPoints = svg.append("g");
-    this.valuelines = svg.append("g"); 
+    this.valuelines = svg.append("g");
     this.drawTrPoints(this.props.state.trPointsX, this.props.state.trPointsY);
     this.drawPaths();
   }

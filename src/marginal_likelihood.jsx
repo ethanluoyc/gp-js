@@ -8,7 +8,7 @@ const ReactDOM = require("react-dom");
 const n = 100;
 const padding = 30;
 
-const svg = d3.select("svg");
+const svg = d3.select("#gp-contour").append("svg");
 let width = +svg.attr("width");
 let height = +svg.attr("height");
 
@@ -80,6 +80,29 @@ d3.json("/data/grid.json", (error, data) => {
     .attr("cy", 0)
     .attr("rx", 10)
     .attr("ry", 10);
+
+
+  // x axis label
+  svg.append("text")             
+    .attr("transform", `translate(${(width / 2)}, ${(height + 30)})`)
+    .style("text-anchor", "middle")
+    .text("log-noise");
+
+  // y axis label
+  svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0)
+    .attr("x", 0 - (height / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("log-length-scale");
+
+  const colorbar = d3.colorbarV(color, 20, 100);
+  colorbar.tickValues([1.2126317839226641, 1.8, 2.4]); // TODO fix negativity
+  svg.append("g")
+    .attr("transform", `translate(${width - 15}, 5)`)
+    .call(colorbar);
+
 });
 
 class GPMarginalLikelihoodApp extends GPApp {
@@ -179,7 +202,7 @@ class GPMarginalLikelihoodApp extends GPApp {
 
 const comp = ReactDOM.render(
   <GPMarginalLikelihoodApp />,
-  document.getElementById("gp"),
+  document.getElementById("gp-marginal-likelihood"),
 );
 
 d3.json("/data/dataset.json", (data) => {

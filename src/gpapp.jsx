@@ -9,6 +9,7 @@ import Slider from "./slider.jsx";
 export default class GPApp extends React.Component {
   constructor(props) {
     super(props);
+    this.initialize();
   }
 
   initialize() {
@@ -198,7 +199,7 @@ export default class GPApp extends React.Component {
     //     onChange={this.setNewGPcf.bind(this)}>{gpoptions}</select></div>;
     // }
     return (<GPAxis state={this.state} addTrPoint={this.addTrPoint.bind(this)}/>);
-    // <div id="gp">
+    // return (<div id="gp">
     //   <div id="gplist">
     //     <div id="addgp">
     //       <div>{control}</div>
@@ -212,9 +213,8 @@ export default class GPApp extends React.Component {
     //           <input type="checkbox" 
     //             value="toggle"
     //             checked={this.state.showMeanAndVar}
-    //             onChange={this.toggleShowMeanAndVar.bind(this)}
-    //           />
-    //         Show mean and credible intervals
+    //             onChange={this.toggleShowMeanAndVar.bind(this)}/>
+    //             Show mean and credible intervals
     //           <br/>
     //           <br/>
     //           {this.state.addTrPoints ? <span className="info"> click on the figure to add an observation </span> : ""}
