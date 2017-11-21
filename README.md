@@ -5,11 +5,7 @@ modifications to the codebase to adapt to my needs.
 
 ## Installation
 
-```
-    npm install
-```
-We use webpack to build, the resulting js files resides in dist/js. You may use 
-`npm run serve`
+We use webpack to build (`npm install && npm run build`), the resulting js files resides in dist/js. You can use `npm run serve` to open up a server to see the demo page.
 
 License
 -------
