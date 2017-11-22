@@ -1,4 +1,5 @@
 const React = require("react");
+import Slider from "./slider.jsx";
 
 function Selector(props) {
   return (
@@ -15,6 +16,12 @@ function Selector(props) {
 }
 
 export class NoiseLevelApp extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      noise_level: 0
+    };
+  }
   componentDidMount() {
     const margin = {
       top: 20,
@@ -89,9 +96,9 @@ export class NoiseLevelApp extends React.Component {
 
   }
 
-  handleClick(e) {
-    const el = e.target;
-    const dd = this.data[el.selectedIndex].map((d, i) => {
+  handleValueSet(e) {
+    const idx = Math.round(e);
+    const dd = this.data[idx].map((d, i) => {
       d = numeric.transpose([numeric.linspace(0, 1, 500), d]);
       d.id = i;
       return d;
@@ -105,14 +112,24 @@ export class NoiseLevelApp extends React.Component {
       .merge(l)
       .attr("d", this.valueline);
     l.exit().remove();
+    this.setState({noise_level: idx});
 
   }
 
   render() {
-    const handleClick = this.handleClick.bind(this);
+    const slideropt = {
+      width: 200,
+      height: 9,
+      min: 0,
+      max: 7
+    };
     return (
       <div>
-        <Selector handleClick={handleClick} />
+        <div>
+        Noise level{" "}
+          <Slider value={this.state.noise_level} setValue={this.handleValueSet.bind(this)} opt={slideropt} />
+          {this.state.noise_level.toFixed(2)}
+        </div>
       </div>
     );
   }
