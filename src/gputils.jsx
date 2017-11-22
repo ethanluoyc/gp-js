@@ -16,7 +16,7 @@ function randnArray(size){
 // ids must be in order of the array
 var cfs = [
   {'id': 0,
-   'name': 'Exponentiated quadratic',
+   'name': 'Squared Exponential',
    'f': function(r, params) {
      return numeric.exp(numeric.mul(-0.5 / (params[0] * params[0]), numeric.pow(r, 2)));
    }
