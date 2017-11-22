@@ -112,14 +112,3 @@ width: 200, height: 9, min: 0, max: 2
       </div>);
   }
 }
-
-const comp = ReactDOM.render(
-  <GPAddObservationAPP />,
-  document.getElementById("gp-update-observations"),
-);
-
-d3.json("/data/dataset.json", (data) => {
-  for (let i = 0; i < data.X.length; i += 1) {
-    comp.addTrPoint(data.X[i], data.Y[i]);
-  }
-});
