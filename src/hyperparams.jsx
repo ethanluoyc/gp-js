@@ -14,15 +14,16 @@ const React = require("react");
 export class HyperParamsGPApp extends GPApp {
   initialize() {
     const gps = [
-      new GP(0, [1, 0.2], 1, [], [], []),
-      new GP(0, [1, 0.2], 2, [], [], []),
-      new GP(0, [1, 0.2], 3, [], [], [])
+      new GP(0, [1, 0.2, 1], 1, [], [], []),
+      new GP(0, [1, 0.2, 1], 2, [], [], []),
+      new GP(0, [1, 0.2, 1], 3, [], [], [])
     ];
 
     this.state = {
       GPs: gps,
       newGPParam: 1.0,
       newGPNoise: 0.2,
+      newGPSignalVariance: 1,
       newGPcf: 0,
       newGPavailableIDs: [10, 9, 8, 7, 6, 5, 4, 3, 2],
       alfa: 0.3,
@@ -41,14 +42,30 @@ export class HyperParamsGPApp extends GPApp {
   }
 
   render() {
-    const sliderOptAlfa = {width: 200, height: 9, min: 0, max: 1};
-    const sliderOptStepSize = {width: 200, height: 9, min: 0, max: 2 * Math.PI};
-    const sliderOptNSteps = {width: 200, height: 9, min: 1, max: 100, step: 1};
-    const sliderOptGPParam = {width: 200, height: 9, min: 0.01, max: 5};
-    const sliderOptGPNoise = {width: 200, height: 9, min: 0, max: 2};
+    const sliderOptAlfa = { width: 200, height: 9, min: 0, max: 1 };
+    const sliderOptStepSize = {
+      width: 200,
+      height: 9,
+      min: 0,
+      max: 2 * Math.PI
+    };
+    const sliderOptNSteps = {
+      width: 200,
+      height: 9,
+      min: 1,
+      max: 100,
+      step: 1
+    };
+    const sliderOptGPParam = { width: 200, height: 9, min: 0.01, max: 5 };
+    const sliderOptGPNoise = { width: 200, height: 9, min: 0, max: 2 };
     const delGP = this.delGP;
-    const gpoptions = cfs.map(function (c) {
-      return (<option key={c.id} value={c.id}>{c.name}</option>);
+    let addNoise = false;
+    const gpoptions = cfs.map(function(c) {
+      return (
+        <option key={c.id} value={c.id}>
+          {c.name}
+        </option>
+      );
     });
     var control;
     if (this.props.ty == "lengthscales") {
@@ -63,7 +80,20 @@ export class HyperParamsGPApp extends GPApp {
           {this.state.newGPParam.toFixed(2)}
         </div>
       );
+    } else if (this.props.ty == "signal") {
+      control = (
+        <div>
+          Signal Variance{" "}
+          <Slider
+            value={this.state.newGPSignalVariance}
+            setValue={this.setNewGPSignalVariance.bind(this)}
+            opt={sliderOptGPNoise}
+          />{" "}
+          {this.state.newGPSignalVariance.toFixed(2)}
+        </div>
+      );
     } else if (this.props.ty == "noise") {
+      addNoise = true;
       control = (
         <div>
           Noise{" "}
@@ -102,7 +132,7 @@ export class HyperParamsGPApp extends GPApp {
           <div className="l-screen">
             <figure>
               <GPAxis
-                state={this.state}
+                state={this.state} addNoise={addNoise}
                 addTrPoint={this.addTrPoint.bind(this)}
               />
               <figcaption>{this.props.caption}</figcaption>

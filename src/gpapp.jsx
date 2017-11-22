@@ -18,12 +18,13 @@ export default class GPApp extends React.Component {
 
   static getDefaultState() {
     const gps = [
-      new GP(0, [1, 0.2], 1, [], [], []),
+      new GP(0, [1, 0.2, 1.], 1, [], [], []),
     ];
     return {
       GPs: gps,
       newGPParam: 1.0,
       newGPNoise: 0.2,
+      newGPSignalVariance: 1,
       newGPcf: 0,
       newGPavailableIDs: [10, 9, 8, 7, 6, 5, 4, 3, 2],
       alfa: 0.3,
@@ -115,6 +116,16 @@ export default class GPApp extends React.Component {
     this.setState({newGPNoise: newVal, GPs: gps});
   }
 
+  setNewGPSignalVariance(newVal) {
+    let gps = this.state.GPs;
+    for (var i = 0; i < gps.length; i++) {
+      const gp = gps[i];
+      gps[i] = new GP(gps[i].cf, [gp.params[0], gp.params[1], newVal], gp.id, [], [], []);
+    }
+    this.setState({newGPSignalVariance: newVal, GPs: gps});
+  }
+
+
   setNewGPcf(event) {
     var gps = this.state.GPs;
     for (var i = 0; i < gps.length; i++) {
@@ -198,7 +209,7 @@ export default class GPApp extends React.Component {
     //   control = <div>Covariance function <select value={this.state.newGPcf}
     //     onChange={this.setNewGPcf.bind(this)}>{gpoptions}</select></div>;
     // }
-    return (<GPAxis state={this.state} addTrPoint={this.addTrPoint.bind(this)}/>);
+    return (<GPAxis state={this.state} addNoise={false} addTrPoint={this.addTrPoint.bind(this)}/>);
     // return (<div id="gp">
     //   <div id="gplist">
     //     <div id="addgp">

@@ -18,6 +18,11 @@ var cfs = [
   {'id': 0,
    'name': 'Squared Exponential',
    'f': function(r, params) {
+     let signal_var = 1.;
+     if (params.length == 3) {
+        signal_var = params[2];
+        return numeric.mul(signal_var, numeric.exp(numeric.mul(-0.5 / (params[0] * params[0]), numeric.pow(r, 2))));
+     };
      return numeric.exp(numeric.mul(-0.5 / (params[0] * params[0]), numeric.pow(r, 2)));
    }
   },
@@ -331,7 +336,13 @@ class GPAxis extends React.Component {
 
     var paths = this.lines.selectAll("path").data(gps, function (d) { return d.id; })
                           .attr("d", function (d) {
+                            // FIXME add noise in K or here?
                             var datay = numeric.add(numeric.dot(d.proj, d.z), d.mu);
+                            let addnoise = props.addNoise;
+                            if (addnoise) {
+                              const noise = numeric.mul(d.params[1], randnArray(numeric.dim(d.z)));
+                              datay = numeric.add(noise, datay);
+                            }
                             return gpline(d3.zip(tePointsX, datay));
                           });
     paths.enter().append("path").attr("d", function (d) {

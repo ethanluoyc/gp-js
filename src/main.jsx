@@ -5,7 +5,7 @@ import { ContourPlot } from "./marginal_likelihood.jsx";
 import { HyperParamsGPApp } from "./hyperparams.jsx";
 import { NoiseLevelApp } from "./noise_level.jsx";
 
-ReactDOM.render(<NoiseLevelApp />, document.getElementById("gp-noise-level"));
+// ReactDOM.render(<NoiseLevelApp />, document.getElementById("gp-noise-level"));
 
 ReactDOM.render(
   <HyperParamsGPApp ty="lengthscales" caption="Different length scales" />,
@@ -15,6 +15,11 @@ ReactDOM.render(
 ReactDOM.render(
   <HyperParamsGPApp ty="noise" caption="Different noise" />,
   document.getElementById("gp-noise")
+);
+
+ReactDOM.render(
+  <HyperParamsGPApp ty="signal" caption="Different signal variance" />,
+  document.getElementById("gp-signal")
 );
 
 ReactDOM.render(
