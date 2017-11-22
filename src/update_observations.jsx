@@ -5,7 +5,7 @@ import Slider from "./slider.jsx";
 const React = require("react");
 const ReactDOM = require("react-dom");
 
-class GPAddObservationAPP extends GPApp {
+export class GPAddObservationAPP extends GPApp {
   constructor(props) {
     super(props);
     this.initialize();

@@ -11,7 +11,7 @@ import Slider from "./slider.jsx";
 const ReactDOM = require("react-dom");
 const React = require("react");
 
-class HyperParamsGPApp extends GPApp {
+export class HyperParamsGPApp extends GPApp {
   initialize() {
     const gps = [
       new GP(0, [1, 0.2], 1, [], [], []),
@@ -113,18 +113,3 @@ class HyperParamsGPApp extends GPApp {
     );
   }
 }
-
-ReactDOM.render(
-  <HyperParamsGPApp ty="lengthscales" caption="Different length scales" />,
-  document.getElementById("gp-lengthscales"),
-);
-
-ReactDOM.render(
-  <HyperParamsGPApp ty="noise" caption="Different noise" />,
-  document.getElementById("gp-noise"),
-);
-
-ReactDOM.render(
-  <HyperParamsGPApp ty="covariance" caption="Different covariance function" />,
-  document.getElementById("gp-covariance"),
-);

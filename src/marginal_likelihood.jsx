@@ -11,7 +11,7 @@ import Slider from "./slider.jsx";
 const React = require("react");
 const ReactDOM = require("react-dom");
 
-class ContourPlot extends React.Component {
+export class ContourPlot extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -312,5 +312,3 @@ class GPMarginalLikelihoodApp extends GPApp {
     );
   }
 }
-
-ReactDOM.render(<ContourPlot />, document.getElementById("app"));

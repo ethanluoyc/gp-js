@@ -4,8 +4,8 @@
   "description": "Gaussian process regression demo in Javascript ==============================================",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
-    "serve": "./node_modules/.bin/webpack-dev-server -d --colors"
+    "build": "webpack --config webpack.prod.js",
+    "serve": "./node_modules/.bin/webpack-dev-server --config webpack.dev.js -d --colors"
   },
   "repository": {
     "type": "git",
@@ -44,7 +44,9 @@
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.0",
     "gulp-util": "^3.0.8",
+    "uglifyjs-webpack-plugin": "^1.1.0",
     "webpack": "^3.8.1",
+    "webpack-merge": "^4.1.1",
     "webpack-stream": "^4.0.0"
   }
 }
