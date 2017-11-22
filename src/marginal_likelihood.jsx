@@ -164,11 +164,11 @@ class ContourPlot extends React.Component {
       <div>
         <div id="gp-contour" style={{position: "absolute"}}><svg id="contour" /></div>
         <div id="gp-marginal-likelihood" style={{position: "absolute",
-                                                 left: "460px", margin: "0px"}} >
+          left: "550px", 
+          margin: "0px"}} >
           <GPMarginalLikelihoodApp
             log_noise={this.state.log_noise}
-            log_lengthscale={this.state.log_lengthscale}
-          />
+            log_lengthscale={this.state.log_lengthscale} />
         </div>
 
       </div>

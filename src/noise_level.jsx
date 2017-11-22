@@ -43,7 +43,7 @@ svg.append("g")
 
 let data;
 
-d3.json("data/Z_noise.json", (raw) => {
+d3.json("/data/Z_noise.json", (raw) => {
   // var gp = new GP(0, [1, 0.2], 1, [], [], []);
   // gp.z.sort(function (a, b) { return b - a; });
   // var data = gp.z.map(function (x) {return [x, Math.random(), 1];});
