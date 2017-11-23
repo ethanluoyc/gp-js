@@ -3,41 +3,101 @@ const React = require("react");
 import { GPAddObservationAPP } from "./update_observations.jsx";
 import { ContourPlot } from "./marginal_likelihood.jsx";
 import { HyperParamsGPApp } from "./hyperparams.jsx";
-import { NoiseLevelApp } from "./noise_level.jsx";
+import { defaultConfig } from "./gputils.jsx";
 
-// ReactDOM.render(<NoiseLevelApp />, document.getElementById("gp-noise-level"));
+const sliderOptGPParam =  { width: 200, height: 9, min: 0.01, max: 5 }; // length-scales
+const sliderOptGPNoise =  { width: 200, height: 9, min: 0,    max: 2 }; // noise-variance 
+const sliderOptGPSignal = { width: 200, height: 9, min: 0,    max: 2 }; // signal-variance
 
+/** Wraps arbitrary React.Component as a figure 
+ * @param {React.Component} WrappedComponent, component class to be wrapped
+*/
+function DistillFigure(WrappedComponent) {
+  return class extends React.Component {
+    constructor(props) {
+      const caption = props.caption;
+      delete props.caption;
+      super(props);
+      this.caption = caption;
+    }
+
+    render() {
+      return (
+        <div>
+          <figure>
+            <WrappedComponent {...this.props} />
+            <figcaption>{this.props.caption}</figcaption>
+          </figure>
+        </div>
+      );
+    }
+  };
+}
+
+let HyperparamsFigure = DistillFigure(HyperParamsGPApp);
 ReactDOM.render(
-  <HyperParamsGPApp ty="lengthscales" caption="Different length scales" />,
+  <HyperparamsFigure
+    sliderOpt={sliderOptGPParam}
+    config={defaultConfig}
+    ty="lengthscales"
+    caption="Different length scales"
+  />,
   document.getElementById("gp-lengthscales")
 );
 
 ReactDOM.render(
-  <HyperParamsGPApp ty="noise" caption="Different noise" />,
+  <HyperparamsFigure
+    sliderOpt={sliderOptGPNoise}
+    ty="noise"
+    config={defaultConfig}
+    caption="Different noise"
+  />,
   document.getElementById("gp-noise")
 );
 
 ReactDOM.render(
-  <HyperParamsGPApp ty="signal" caption="Different signal variance" />,
+  <HyperparamsFigure
+    sliderOpt={sliderOptGPSignal}
+    config={defaultConfig}
+    ty="signal"
+    caption="Different signal variance"
+  />,
   document.getElementById("gp-signal")
 );
 
 ReactDOM.render(
-  <HyperParamsGPApp ty="covariance" caption="Different covariance function" />,
+  <HyperparamsFigure
+    ty="covariance"
+    config={defaultConfig}
+    caption="Different covariance function"
+  />,
   document.getElementById("gp-covariance")
 );
 
-// Contour plot
-ReactDOM.render(<ContourPlot />, document.getElementById("app"));
-
 // Update observations
-const comp = ReactDOM.render(
-  <GPAddObservationAPP />,
+let GPAddObservationFigure = DistillFigure(GPAddObservationAPP);
+ReactDOM.render(
+  <GPAddObservationFigure 
+    sliderOptGPParam={sliderOptGPParam}
+    sliderOptGPNoise={sliderOptGPNoise}
+    caption="Update observations" />,
   document.getElementById("gp-update-observations")
 );
 
-d3.json("/data/dataset.json", data => {
-  for (let i = 0; i < data.X.length; i += 1) {
-    comp.addTrPoint(data.X[i], data.Y[i]);
-  }
-});
+// Contour plot for the marginal likelihood
+let ContourFigure = DistillFigure(ContourPlot);
+
+// Configuration for RHS GPAxis of contour plot
+// TODO: allow for customization of the contour plot size.
+let config = {
+  width: 500,
+  height: 400,
+  margin: 30,
+};
+
+ReactDOM.render(
+  <ContourFigure 
+    config={config}
+    caption="Contour plot for marginal likelihood" />,
+  document.getElementById("app")
+);

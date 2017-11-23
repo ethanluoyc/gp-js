@@ -3,7 +3,8 @@ import {
   GPAxis,
   tePointsX,
   computeDistanceMatrix,
-  recomputeProjections
+  recomputeProjections,
+  defaultConfig,
 } from "./gputils.jsx";
 import GPApp from "./gpapp.jsx";
 import Slider from "./slider.jsx";
@@ -129,19 +130,19 @@ export class ContourPlot extends React.Component {
         .attr("transform", `translate(${width - 15}, 5)`)
         .call(colorbar);
 
-      this.ll = svg.append("text")
+      this.ll = svg
+        .append("text")
         .attr("transform", `translate(${margin + 20}, 20)`)
         .text(`log-lengthscale: ${this.state.log_lengthscale.toFixed(3)}`);
-      
-      this.ln = svg.append("text")
+
+      this.ln = svg
+        .append("text")
         .attr("transform", `translate(${margin + 20}, 40)`)
         .text(`log-noise: ${this.state.log_noise.toFixed(3)}`);
 
       var that = this;
       function mousemove() {
         const position = d3.mouse(this);
-        console.log(`log-noise ${x.invert(position[0] - margin)}`);
-        console.log(`log-lengthscale ${y.invert(position[1])}`);
         circle.attr("transform", `translate(${position[0]}, ${position[1]})`);
         that.setState({
           // TODO remove "log" in the names
@@ -161,16 +162,26 @@ export class ContourPlot extends React.Component {
 
   render() {
     return (
-      <div>
-        <div id="gp-contour" style={{position: "absolute"}}><svg id="contour" /></div>
-        <div id="gp-marginal-likelihood" style={{position: "absolute",
-          left: "550px", 
-          margin: "0px"}} >
-          <GPMarginalLikelihoodApp
-            log_noise={this.state.log_noise}
-            log_lengthscale={this.state.log_lengthscale} />
+      <div style={{
+        height: this.props.config.height + 40
+      }}>
+        <div id="gp-contour" style={{ position: "absolute" }}>
+          <svg id="contour" />
         </div>
-
+        <div
+          id="gp-marginal-likelihood"
+          style={{
+            position: "absolute",
+            left: 450,
+            margin: "0px"
+          }}
+        >
+          <GPMarginalLikelihoodApp
+            config={this.props.config}
+            log_noise={this.state.log_noise}
+            log_lengthscale={this.state.log_lengthscale}
+          />
+        </div>
       </div>
     );
   }
@@ -269,46 +280,16 @@ class GPMarginalLikelihoodApp extends GPApp {
   }
 
   render() {
-    const sliderOptGPParam = {
-      width: 200,
-      height: 9,
-      min: -2,
-      max: 6
-    };
-    const sliderOptGPNoise = {
-      width: 200,
-      height: 9,
-      min: -2,
-      max: 1
-    };
-    const app = super.render();
 
-    return (
-      <div>
-        <div className="control">
-          <div>
-            <div>
-              Length scale{" "}
-              <Slider
-                value={this.state.newGPParam}
-                setValue={this.setNewGPParam.bind(this)}
-                opt={sliderOptGPParam}
-              />
-              {this.state.newGPParam.toFixed(2)}
-            </div>
-            <div>
-              Noise{" "}
-              <Slider
-                value={this.state.newGPNoise}
-                setValue={this.setNewGPNoise.bind(this)}
-                opt={sliderOptGPNoise}
-              />{" "}
-              {this.state.newGPNoise.toFixed(2)}
-            </div>
-          </div>
-        </div>
-        <div className="gp-axis">{app}</div>
-      </div>
+    const app = (
+      <GPAxis
+        state={this.state}
+        config={this.props.config}
+        addNoise={false}
+        addTrPoint={this.addTrPoint.bind(this)}
+      />
     );
+
+    return (<div className="gp-axis">{app}</div>);
   }
 }

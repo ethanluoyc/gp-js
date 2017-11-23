@@ -3,7 +3,8 @@
 var React= require("react");
 var ReactDOM = require("react-dom");
 
-var tePointsX = numeric.linspace(-5, 5, numeric.dim(distmatTe)[0]);
+export var tePointsX = numeric.linspace(-5, 5, numeric.dim(distmatTe)[0]);
+
 var randn = d3.randomNormal();
 function randnArray(size){
   var zs = new Array(size);
@@ -13,8 +14,14 @@ function randnArray(size){
   return zs;
 }
 
+export const defaultConfig = {
+  margin: 30, // leave at least 30px, otherwise axis won't display fully
+  width: 600,
+  height: 400,
+}
+
 // ids must be in order of the array
-var cfs = [
+export var cfs = [
   {'id': 0,
    'name': 'Squared Exponential',
    'f': function(r, params) {
@@ -94,7 +101,7 @@ var cfs = [
   }
 ];
 
-function GP(cf, params, id, dmTr, dmTeTr, trY) {
+export function GP(cf, params, id, dmTr, dmTeTr, trY) {
   var M = numeric.dim(distmatTe)[1];
 
   this.z = randnArray(M);
@@ -112,7 +119,7 @@ function GP(cf, params, id, dmTr, dmTeTr, trY) {
 }
 
 
-function computeProjection(Kte, cf, params, dmTr, dmTeTr, trY) {
+export function computeProjection(Kte, cf, params, dmTr, dmTeTr, trY) {
   var Mtr = numeric.dim(dmTr)[0];
   var Mte = numeric.dim(distmatTe)[0];
 
@@ -155,7 +162,7 @@ function computeProjection(Kte, cf, params, dmTr, dmTeTr, trY) {
   return { proj: proj, mu: mu, sd95: sd95 };
 }
 
-function recomputeProjections(GPs, dmTr, dmTeTr, trY) {
+export function recomputeProjections(GPs, dmTr, dmTeTr, trY) {
   for (var gpi = 0; gpi < GPs.length; gpi++){
     var gp = GPs[gpi];
     var tmp = computeProjection(gp.Kte, gp.cf, gp.params, dmTr, dmTeTr, trY);
@@ -168,7 +175,7 @@ function recomputeProjections(GPs, dmTr, dmTeTr, trY) {
   return GPs;
 }
 
-function computeDistanceMatrix(xdata1, xdata2) {
+export function computeDistanceMatrix(xdata1, xdata2) {
   var dm = numeric.rep([xdata1.length,xdata2.length], 0);
   for (var i = 0; i < xdata1.length; i++){
     for (var j = 0; j < xdata2.length; j++){
@@ -179,7 +186,7 @@ function computeDistanceMatrix(xdata1, xdata2) {
   return dm;
 }
 
-class GPAxis extends React.Component {
+export class GPAxis extends React.Component {
   constructor(props) {
     super(props);
     this.scales = { x: null, y: null };
@@ -234,9 +241,10 @@ class GPAxis extends React.Component {
     var mousePos = d3.mouse(ReactDOM.findDOMNode(this));
     var x = this.scales.x;
     var y = this.scales.y;
+    const config = this.props.config;
 
     // x is transformed to a point on a grid of 200 points between -5 and 5
-    this.props.addTrPoint(Math.round((x.invert(mousePos[0]-50)+5)/10*199)/199*10-5, y.invert(mousePos[1]-50));
+    this.props.addTrPoint(Math.round((x.invert(mousePos[0]-config.margin)+5)/10*199)/199*10-5, y.invert(mousePos[1]-config.margin));
   }
   updateState() {
     var M = numeric.dim(distmatTe)[1];
@@ -357,19 +365,17 @@ class GPAxis extends React.Component {
 
   componentDidMount() {
     var svg = d3.select(ReactDOM.findDOMNode(this));
-    var height = svg.attr("height"),
-        width  = svg.attr("width");
-    if (!height) {
-      height = 350;
-      svg.attr("height", height);
-    }
-    if (!width) {
-      width = 500;
-      svg.attr("width", width);
-    }
-    var margin = 50;
+    const config = this.props.config;
+    const height = config.height;
+    const width  = config.width;
+    const margin = config.margin;
+
+    svg.attr("height", height)
+       .attr("width", width);
+
     svg = svg.append("g")
-             .attr("transform", "translate("+margin+","+margin+")");
+      .attr("transform", `translate(${margin}, ${margin})`)
+
     this.svg = svg;
     var fig_height = height - 2*margin,
         fig_width  = width  - 2*margin;
@@ -409,26 +415,3 @@ class GPAxis extends React.Component {
     this.drawPaths();
   }
 }
-
-class GPList extends React.Component {
-  render() {
-    var delGP = this.props.delGP;
-    var gplist = this.props.GPs.map(function (gp) {
-      return (<tr key={gp.id}>
-                <td className={"tr"+gp.id}>{gp.id}</td><td>{cfs[gp.cf].name}</td><td>{gp.params[0].toFixed(2)}</td><td>{gp.params[1].toFixed(2)}</td><td><button onClick={delGP(gp.id)}>remove</button></td>
-              </tr>);
-    });
-    return (<table>
-    <thead>
-      <tr><th>id</th><th>covariance</th><th>length scale</th><th>noise</th><th></th></tr>
-    </thead>
-    <tbody>{gplist}</tbody></table>);
-  }
-}
-
-export {GP, GPAxis, GPList, 
-        cfs, 
-        tePointsX, 
-        randn, 
-        computeDistanceMatrix, 
-        recomputeProjections};
