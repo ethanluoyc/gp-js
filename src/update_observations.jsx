@@ -92,11 +92,7 @@ export class GPAddObservationAPP extends GPApp {
   }
 
   componentDidMount() {
-    d3.json("/data/dataset.json", data => {
-      for (let i = 0; i < data.X.length; i += 1) {
-        this.addTrPoint(data.X[i], data.Y[i]);
-      }
-    });
+    this.setState({showMeanAndVar: true});
   }
 
   render() {

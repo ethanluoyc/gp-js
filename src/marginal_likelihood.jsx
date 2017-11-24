@@ -16,8 +16,8 @@ export class ContourPlot extends React.Component {
   constructor() {
     super();
     this.state = {
-      log_lengthscale: 0,
-      log_noise: 0
+      lengthscale: 1,
+      noise: 1
     };
   }
 
@@ -32,19 +32,22 @@ export class ContourPlot extends React.Component {
       .attr("width", width + 2 * margin)
       .attr("height", height + margin);
 
+    const threshold = numeric.linspace(-1.2126317839226641 * 1.0001, -2.4, 20);
+    threshold.push(-24);
     const contours = d3
       .contours()
       .size([100, 100])
-      .thresholds(numeric.linspace(1.2126317839226641 * 1.0001, 2.4, 20));
+      .thresholds(threshold);
 
     // https://github.com/d3/d3-scale-chromatic
+
     const color = d3
       .scaleLinear()
-      .domain([1.2126317839226641, 2.4])
-      .interpolate(() => d3.interpolateSpectral);
+      .domain([-1.2126317839226641, -2.4])
+      .interpolate(() => (i) => d3.interpolateSpectral(1-i));
 
     const colorbar = d3.colorbarV(color, 20, 100);
-    colorbar.tickValues([1.2126317839226641, 1.8, 2.4]); // TODO fix negativity
+    colorbar.tickValues([-1.2126317839226641, -1.8, -2.4]); // TODO fix negativity
 
     const x = d3
       .scaleLinear()
@@ -66,7 +69,7 @@ export class ContourPlot extends React.Component {
       const dt = new Array(100 * 100);
       for (let i = 0; i < 100; i += 1) {
         for (let j = 0; j < 100; j += 1) {
-          dt[i * 100 + j] = Math.abs(data[i][j]);
+          dt[i * 100 + j] = data[i][j];
         }
       }
 
@@ -133,12 +136,12 @@ export class ContourPlot extends React.Component {
       this.ll = svg
         .append("text")
         .attr("transform", `translate(${margin + 20}, 20)`)
-        .text(`log-lengthscale: ${this.state.log_lengthscale.toFixed(3)}`);
+        .text(`lengthscale: ${this.state.lengthscale.toFixed(3)}`);
 
       this.ln = svg
         .append("text")
         .attr("transform", `translate(${margin + 20}, 40)`)
-        .text(`log-noise: ${this.state.log_noise.toFixed(3)}`);
+        .text(`noise: ${this.state.noise.toFixed(3)}`);
 
       var that = this;
       function mousemove() {
@@ -146,8 +149,8 @@ export class ContourPlot extends React.Component {
         circle.attr("transform", `translate(${position[0]}, ${position[1]})`);
         that.setState({
           // TODO remove "log" in the names
-          log_noise: Math.exp(x.invert(position[0] - margin)),
-          log_lengthscale: Math.exp(y.invert(position[1]))
+          noise: Math.exp(x.invert(position[0] - margin)),
+          lengthscale: Math.exp(y.invert(position[1]))
         });
       }
 
@@ -156,8 +159,8 @@ export class ContourPlot extends React.Component {
   }
 
   componentWillUpdate(nextProps, nextState) {
-    this.ll.text(`log-lengthscale: ${nextState.log_lengthscale.toFixed(3)}`);
-    this.ln.text(`log-noise: ${nextState.log_noise.toFixed(3)}`);
+    this.ll.text(`lengthscale: ${nextState.lengthscale.toFixed(3)}`);
+    this.ln.text(`noise: ${nextState.noise.toFixed(3)}`);
   }
 
   render() {
@@ -178,8 +181,8 @@ export class ContourPlot extends React.Component {
         >
           <GPMarginalLikelihoodApp
             config={this.props.config}
-            log_noise={this.state.log_noise}
-            log_lengthscale={this.state.log_lengthscale}
+            noise={this.state.noise}
+            lengthscale={this.state.lengthscale}
           />
         </div>
       </div>
@@ -208,8 +211,8 @@ class GPMarginalLikelihoodApp extends GPApp {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setNewGPParam(nextProps.log_lengthscale);
-    this.setNewGPNoise(nextProps.log_noise);
+    this.setNewGPParam(nextProps.lengthscale);
+    this.setNewGPNoise(nextProps.noise);
   }
 
   setNewGPNoise(newVal) {

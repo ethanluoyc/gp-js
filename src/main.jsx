@@ -7,7 +7,7 @@ import { defaultConfig } from "./gputils.jsx";
 
 const sliderOptGPParam =  { width: 200, height: 9, min: 0.01, max: 5 }; // length-scales
 const sliderOptGPNoise =  { width: 200, height: 9, min: 0,    max: 2 }; // noise-variance 
-const sliderOptGPSignal = { width: 200, height: 9, min: 0,    max: 2 }; // signal-variance
+const sliderOptGPSignal = { width: 200, height: 9, min: 0,    max: 1 }; // signal-variance
 
 /** Wraps arbitrary React.Component as a figure 
  * @param {React.Component} WrappedComponent, component class to be wrapped
@@ -33,6 +33,13 @@ function DistillFigure(WrappedComponent) {
     }
   };
 }
+
+// "HyperparamsFigure" only supports three kinds
+// of hyperparameters
+// 1. lengthscales
+// 2. noise
+// 3. signal
+// pass in as ty to configure them, see below
 
 let HyperparamsFigure = DistillFigure(HyperParamsGPApp);
 ReactDOM.render(

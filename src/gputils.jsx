@@ -152,6 +152,8 @@ export function computeProjection(Kte, cf, params, dmTr, dmTeTr, trY) {
     }
     var proj = numeric.dot(svd2.U, numeric.diag(numeric.sqrt(svd2.S)));
     var sd95 = numeric.mul(1.98, numeric.sqrt(numeric.getDiag(numeric.dot(proj, numeric.transpose(proj)))));
+    // FIXES: added the noise variance 
+    sd95 = numeric.add(params[1], sd95);
   } else {
     var sd95 = numeric.mul(1.98, numeric.sqrt(numeric.getDiag(Kte)));
     var svd = numeric.svd(Kte);

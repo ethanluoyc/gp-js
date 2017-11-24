@@ -16,8 +16,6 @@ export class HyperParamsGPApp extends React.Component {
     super(props);
     const gps = [
       new GP(0, [1, 0.2, 1], 1, [], [], []),
-      new GP(0, [1, 0.2, 1], 2, [], [], []),
-      new GP(0, [1, 0.2, 1], 3, [], [], [])
     ];
 
     this.state = {
@@ -26,6 +24,7 @@ export class HyperParamsGPApp extends React.Component {
       newGPNoise: 0.2,
       newGPSignalVariance: 1,
       newGPcf: 0,
+      numGPs: 1,
       newGPavailableIDs: [10, 9, 8, 7, 6, 5, 4, 3, 2],
       alfa: 0.3,
       stepSize: 3.14,
@@ -38,30 +37,6 @@ export class HyperParamsGPApp extends React.Component {
       samplingState: 0, // 0 = stopped, 1 = discrete, 2 = continuous
       oldSamplingState: 0,
       showSamples: true,
-      showMeanAndVar: false
-    };
-  }
-
-  static getDefaultState() {
-    const gps = [new GP(0, [1, 0.2, 1], 1, [], [], [])];
-    return {
-      GPs: gps,
-      newGPParam: 1.0,
-      newGPNoise: 0.2,
-      newGPSignalVariance: 1,
-      newGPcf: 0,
-      newGPavailableIDs: [10, 9, 8, 7, 6, 5, 4, 3, 2],
-      alfa: 0.3,
-      stepSize: 3.14,
-      NSteps: 15,
-      addTrPoints: false,
-      trPointsX: [],
-      trPointsY: [],
-      dmTr: [],
-      dmTeTr: [],
-      samplingState: 0, // 0 = stopped, 1 = discrete, 2 = continuous
-      oldSamplingState: 0,
-      showSamples: false,
       showMeanAndVar: false
     };
   }
@@ -180,6 +155,22 @@ export class HyperParamsGPApp extends React.Component {
       );
     }
     this.setState({ newGPcf: event.target.value, GPs: gps });
+  }
+
+  setNumGPs(event) {
+    console.log(event.target.value);
+    var gps = new Array(event.target.value);
+    for (var i = 0; i < event.target.value; i++) {
+      gps[i] = new GP(
+        event.target.value,
+        [this.state.newGPParam, this.state.newGPNoise, this.state.newGPSignalVariance],
+        i+1,
+        this.state.dmTr,
+        this.state.dmTeTr,
+        this.state.trPointsY
+      );
+    }
+    this.setState({ numGPs: event.target.value, GPs: gps });
   }
 
   addGP() {
@@ -327,6 +318,11 @@ export class HyperParamsGPApp extends React.Component {
           <button onClick={this.toggleSampling.bind(this)}>
             {this.state.samplingState == 0 ? "Start" : "Stop"}
           </button>
+          <select onChange={this.setNumGPs.bind(this)}>
+            <option value={1}>1</option>
+            <option value={2}>2</option>
+            <option value={3}>3</option>
+          </select>
         </div>
         <GPAxis
           state={this.state}
