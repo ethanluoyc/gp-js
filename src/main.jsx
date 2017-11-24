@@ -16,7 +16,7 @@ function DistillFigure(WrappedComponent) {
   return class extends React.Component {
     constructor(props) {
       const caption = props.caption;
-      delete props.caption;
+      // delete props.caption;
       super(props);
       this.caption = caption;
     }
