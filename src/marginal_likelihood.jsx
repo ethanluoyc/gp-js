@@ -27,14 +27,16 @@ export class ContourPlot extends React.Component {
     const width = 400;
     const height = 400;
 
-    const svg = d3
-      .select("#contour")
-      .attr("width", width + 2 * margin)
+    const svg = d3.select(this.svg)
+      .attr("width",  width + 2 * margin)
       .attr("height", height + margin);
 
     d3.json("/data/dataset_contour.json", (error, dataset) => {
+      this.dataset = dataset;
       let data = dataset["LL"];
-      const gridSize = 20;
+      const gridSize = dataset["LL"].length;
+      let llMax = -1.2207148089884097;
+      let llMin = -2.5;
 
       if (error) throw error;
       const dt = new Array(gridSize * gridSize);
@@ -45,11 +47,11 @@ export class ContourPlot extends React.Component {
       }
 
       const threshold = numeric.linspace(
-        -1.2126317839226641 * 1.0001,
-        -2.4,
-        100
+        llMax * 1.0001,
+        llMin,
+        20
       );
-      threshold.push(-24);
+      threshold.push(-6000);
 
       const contours = d3
         .contours()
@@ -59,11 +61,11 @@ export class ContourPlot extends React.Component {
       // https://github.com/d3/d3-scale-chromatic
       const color = d3
         .scaleLinear()
-        .domain([-1.2126317839226641, -2.4])
+        .domain([llMax, llMin])
         .interpolate(() => i => d3.interpolateSpectral(1 - i));
 
       const colorbar = d3.colorbarV(color, 20, 100);
-      colorbar.tickValues([-1.2126317839226641, -1.8, -2.4]); // TODO fix negativity
+      colorbar.tickValues([llMax, (llMax + llMin) / 2, llMin]); // TODO fix negativity
 
       const x = d3
         .scaleLinear()
@@ -73,7 +75,7 @@ export class ContourPlot extends React.Component {
       const y = d3
         .scaleLinear()
         .domain([-2, 4])
-        .rangeRound([0, height]);
+        .rangeRound([height, 0]);
 
       const xAxis = d3.axisBottom(x).ticks(10); // log-noise
       const yAxis = d3.axisLeft(y).ticks(10); // log-length-scales
@@ -85,7 +87,9 @@ export class ContourPlot extends React.Component {
         .data(contours(dt))
         .enter()
         .append("path")
-        .attr("d", d3.geoPath(d3.geoIdentity().scale(width / gridSize)))
+        .attr("d", d3.geoPath(d3.geoIdentity().scale(width / gridSize)
+          .translate([0, height])
+          .reflectY(true)))
         .attr("fill", d => color(d.value));
 
       svg
@@ -100,9 +104,11 @@ export class ContourPlot extends React.Component {
         .attr("transform", `translate(${margin}, ${height})`)
         .call(xAxis);
 
-      // Draw the Ellipse
-      let circle = svg.append("g").attr("transform", "translate(100, 100)");
-      circle
+      this.circle = svg
+        .append("g")
+        .attr("transform", "translate(100, 100)");
+
+      this.circle
         .append("ellipse")
         .attr("fill-opacity", 0)
         .attr("stroke-width", 2)
@@ -150,13 +156,14 @@ export class ContourPlot extends React.Component {
       var that = this;
       function mousemove() {
         const position = d3.mouse(this);
-        let bucketX = Math.round((position[0] - margin) / 20);
-        let bucketY = Math.round(position[1] / 20);
-        let posX = bucketX * 20 + margin;
-        let posY = bucketY * 20;
+        let pixelsPerGrid = 20;
+        let bucketX = d3.min([Math.round((position[0] - margin) / pixelsPerGrid), gridSize - 1]);
+        let bucketY = d3.min([Math.round(position[1] / pixelsPerGrid), gridSize - 1]);
+        let posX = bucketX * pixelsPerGrid + margin;
+        let posY = bucketY * pixelsPerGrid;
         let sigvar = dataset["sig_var"][bucketX][bucketY];
 
-        circle.attr("transform", `translate(${posX}, ${posY})`);
+        that.circle.attr("transform", `translate(${posX}, ${posY})`);
         let log_noise = x.invert(posX - margin);
         let log_lengthscale = y.invert(posY);
 
@@ -185,7 +192,7 @@ export class ContourPlot extends React.Component {
         }}
       >
         <div id="gp-contour" style={{ position: "absolute" }}>
-          <svg id="contour" />
+          <svg id="contour" ref={svg => this.svg = svg }/>
         </div>
         <div
           id="gp-marginal-likelihood"
@@ -193,8 +200,7 @@ export class ContourPlot extends React.Component {
             position: "absolute",
             left: 450,
             margin: "0px"
-          }}
-        >
+          }}>
           <GPMarginalLikelihoodApp
             config={this.props.config}
             noise={this.state.noise}

@@ -30,6 +30,11 @@
   //stroke-dasharray: 5,10;
   opacity: 0.5;
 }
+.variance {
+  fill-opacity: .3;
+  fill: #dbe5f5;
+}
+
 .line1 { stroke: #204a87; }
 .tr1 { border-left: 24px solid #204a87; }
 .line2 { stroke: #ce5c00; }

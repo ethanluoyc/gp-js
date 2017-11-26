@@ -246,7 +246,8 @@ export class GPAxis extends React.Component {
     const config = this.props.config;
 
     // x is transformed to a point on a grid of 200 points between -5 and 5
-    this.props.addTrPoint(Math.round((x.invert(mousePos[0]-config.margin)+5)/10*199)/199*10-5, y.invert(mousePos[1]-config.margin));
+    this.props.addTrPoint(Math.round((x.invert(mousePos[0]-config.margin)+5)/10*199)/199*10-5, 
+      y.invert(mousePos[1]-config.margin));
   }
   updateState() {
     var M = numeric.dim(distmatTe)[1];
@@ -284,6 +285,7 @@ export class GPAxis extends React.Component {
   }
   drawMeanAndVar(props) {
     var gpline = this.gpline;
+    var area = this.area;
 
     if (props.state.showMeanAndVar){
       var gps = props.state.GPs;
@@ -291,7 +293,7 @@ export class GPAxis extends React.Component {
       var gps = [];
     }
 
-    var paths = this.meanLines.selectAll("path").data(gps, function (d) { return d.id; })
+    let paths = this.meanLines.selectAll("path").data(gps, function (d) { return d.id; })
                           .attr("d", function (d) {
                             var datay = d.mu;
                             return gpline(d3.zip(tePointsX, datay));
@@ -305,34 +307,24 @@ export class GPAxis extends React.Component {
                                  });
     paths.exit().remove();
 
-    var pathsUp = this.upSd95Lines.selectAll("path").data(gps, function (d) { return d.id; })
-                          .attr("d", function (d) {
-                            var datay = numeric.add(d.mu, d.sd95);
-                            return gpline(d3.zip(tePointsX, datay));
-                          });
-    pathsUp.enter().append("path").attr("d", function (d) {
-                                   var datay = numeric.add(d.mu, d.sd95);
-                                   return gpline(d3.zip(tePointsX, datay));
-                                 })
-                                .attr("class", function(d) {
-                                   return "sdline line line"+d.id;
-                                 });
-    pathsUp.exit().remove();
 
-    var pathsDown = this.downSd95Lines.selectAll("path").data(gps, function (d) { return d.id; })
+    let areas = this.areas.selectAll("path").data(gps, function (d) { return d.id; })
                           .attr("d", function (d) {
-                            var datay = numeric.sub(d.mu, d.sd95);
-                            return gpline(d3.zip(tePointsX, datay));
+                            var datay = d.mu;
+                            var upper = numeric.add(d.mu, d.sd95);
+                            var lower = numeric.sub(d.mu, d.sd95);
+                            return area(d3.zip(tePointsX, upper, lower));
                           });
-    pathsDown.enter().append("path").attr("d", function (d) {
-                                   var datay = numeric.sub(d.mu, d.sd95);
-                                   return gpline(d3.zip(tePointsX, datay));
+    areas.enter().append("path").attr("d", function (d) {
+                                   var datay = d.mu;
+                                   var upper = numeric.add(d.mu, d.sd95);
+                                   var lower = numeric.sub(d.mu, d.sd95);
+                                   return area(d3.zip(tePointsX, upper, lower));
                                  })
                                 .attr("class", function(d) {
-                                   return "sdline line line"+d.id;
+                                   return "variance variance"+d.id;
                                  });
-    pathsDown.exit().remove();
-    
+    areas.exit().remove();
   }
 
   drawPaths(props) {
@@ -397,6 +389,11 @@ export class GPAxis extends React.Component {
                      .x(function(d) { return x(d[0]); })
                      .y(function(d) { return y(d[1]); });
 
+    this.area = d3.area()
+      .x(function(d) { return x(d[0]); })
+      .y0(function(d) { return y(d[1]); })
+      .y1(function(d) { return y(d[2]); });
+
     // axes
     svg.append("g")
        .attr("class", "x axis")
@@ -408,11 +405,10 @@ export class GPAxis extends React.Component {
        .call(yAxis);
 
     this.meanLines = svg.append("g");
-    this.upSd95Lines = svg.append("g");
-    this.downSd95Lines = svg.append("g");
     this.lines = svg.append("g");
     this.trPoints = svg.append("g");
     this.valuelines = svg.append("g");
+    this.areas = svg.append("g");
     this.drawTrPoints(this.props.state.trPointsX, this.props.state.trPointsY);
     this.drawPaths();
   }
