@@ -112,7 +112,7 @@ export class HyperParamsGPApp extends React.Component {
     let gps = this.state.GPs;
     for (var i = 0; i < gps.length; i++) {
       const gp = gps[i];
-      gps[i] = new GP(gps[i].cf, [newVal, gp.params[1]], gp.id, [], [], []);
+      gps[i] = new GP(gps[i].cf, [newVal, gp.params[1], gp.params[2]], gp.id, [], [], []);
     }
     this.setState({ newGPParam: newVal, GPs: gps });
   }
@@ -121,7 +121,7 @@ export class HyperParamsGPApp extends React.Component {
     let gps = this.state.GPs;
     for (var i = 0; i < gps.length; i++) {
       const gp = gps[i];
-      gps[i] = new GP(gps[i].cf, [gp.params[0], newVal], gp.id, [], [], []);
+      gps[i] = new GP(gps[i].cf, [gp.params[0], newVal, gp.params[2]], gp.id, [], [], []);
     }
     this.setState({ newGPNoise: newVal, GPs: gps });
   }
@@ -147,7 +147,7 @@ export class HyperParamsGPApp extends React.Component {
     for (var i = 0; i < gps.length; i++) {
       gps[i] = new GP(
         event.target.value,
-        [this.state.newGPParam, this.state.newGPNoise],
+        [this.state.newGPParam, this.state.newGPNoise, this.state.newGPSignalVariance],
         gps[i].id,
         this.state.dmTr,
         this.state.dmTeTr,
@@ -158,11 +158,10 @@ export class HyperParamsGPApp extends React.Component {
   }
 
   setNumGPs(event) {
-    console.log(event.target.value);
     var gps = new Array(event.target.value);
     for (var i = 0; i < event.target.value; i++) {
       gps[i] = new GP(
-        event.target.value,
+        this.state.GPs[0].cf,
         [this.state.newGPParam, this.state.newGPNoise, this.state.newGPSignalVariance],
         i+1,
         this.state.dmTr,
@@ -235,20 +234,6 @@ export class HyperParamsGPApp extends React.Component {
   }
 
   render() {
-    const sliderOptAlfa = { width: 200, height: 9, min: 0, max: 1 };
-    const sliderOptStepSize = {
-      width: 200,
-      height: 9,
-      min: 0,
-      max: 2 * Math.PI
-    };
-    const sliderOptNSteps = {
-      width: 200,
-      height: 9,
-      min: 1,
-      max: 100,
-      step: 1
-    };
     const sliderOpt = this.props.sliderOpt;
     let addNoise = false;
     const gpoptions = cfs.map(function(c) {
