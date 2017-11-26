@@ -4,7 +4,7 @@ import {
   tePointsX,
   computeDistanceMatrix,
   recomputeProjections,
-  defaultConfig,
+  defaultConfig
 } from "./gputils.jsx";
 import GPApp from "./gpapp.jsx";
 import Slider from "./slider.jsx";
@@ -17,12 +17,12 @@ export class ContourPlot extends React.Component {
     super();
     this.state = {
       lengthscale: 1,
-      noise: 1
+      noise: 1,
+      signal: 1
     };
   }
 
   componentDidMount() {
-    const n = 100;
     const margin = 40;
     const width = 400;
     const height = 400;
@@ -32,46 +32,51 @@ export class ContourPlot extends React.Component {
       .attr("width", width + 2 * margin)
       .attr("height", height + margin);
 
-    const threshold = numeric.linspace(-1.2126317839226641 * 1.0001, -2.4, 20);
-    threshold.push(-24);
-    const contours = d3
-      .contours()
-      .size([100, 100])
-      .thresholds(threshold);
+    d3.json("/data/dataset_contour.json", (error, dataset) => {
+      let data = dataset["LL"];
+      const gridSize = 20;
 
-    // https://github.com/d3/d3-scale-chromatic
-
-    const color = d3
-      .scaleLinear()
-      .domain([-1.2126317839226641, -2.4])
-      .interpolate(() => (i) => d3.interpolateSpectral(1-i));
-
-    const colorbar = d3.colorbarV(color, 20, 100);
-    colorbar.tickValues([-1.2126317839226641, -1.8, -2.4]); // TODO fix negativity
-
-    const x = d3
-      .scaleLinear()
-      .domain([-2, 1])
-      .rangeRound([0, width]);
-
-    const y = d3
-      .scaleLinear()
-      .domain([-2, 6])
-      .rangeRound([0, height]);
-
-    const xAxis = d3.axisBottom(x).ticks(10);
-    const yAxis = d3.axisLeft(y).ticks(10);
-
-    let circle = null;
-
-    d3.json("/data/grid.json", (error, data) => {
       if (error) throw error;
-      const dt = new Array(100 * 100);
-      for (let i = 0; i < 100; i += 1) {
-        for (let j = 0; j < 100; j += 1) {
-          dt[i * 100 + j] = data[i][j];
+      const dt = new Array(gridSize * gridSize);
+      for (let i = 0; i < gridSize; i += 1) {
+        for (let j = 0; j < gridSize; j += 1) {
+          dt[i * gridSize + j] = data[i][j];
         }
       }
+
+      const threshold = numeric.linspace(
+        -1.2126317839226641 * 1.0001,
+        -2.4,
+        100
+      );
+      threshold.push(-24);
+
+      const contours = d3
+        .contours()
+        .size([gridSize, gridSize])
+        .thresholds(threshold);
+
+      // https://github.com/d3/d3-scale-chromatic
+      const color = d3
+        .scaleLinear()
+        .domain([-1.2126317839226641, -2.4])
+        .interpolate(() => i => d3.interpolateSpectral(1 - i));
+
+      const colorbar = d3.colorbarV(color, 20, 100);
+      colorbar.tickValues([-1.2126317839226641, -1.8, -2.4]); // TODO fix negativity
+
+      const x = d3
+        .scaleLinear()
+        .domain([-5, 1])
+        .rangeRound([0, width]);
+
+      const y = d3
+        .scaleLinear()
+        .domain([-2, 4])
+        .rangeRound([0, height]);
+
+      const xAxis = d3.axisBottom(x).ticks(10); // log-noise
+      const yAxis = d3.axisLeft(y).ticks(10); // log-length-scales
 
       svg
         .append("g")
@@ -80,7 +85,7 @@ export class ContourPlot extends React.Component {
         .data(contours(dt))
         .enter()
         .append("path")
-        .attr("d", d3.geoPath(d3.geoIdentity().scale(width / n)))
+        .attr("d", d3.geoPath(d3.geoIdentity().scale(width / gridSize)))
         .attr("fill", d => color(d.value));
 
       svg
@@ -96,8 +101,7 @@ export class ContourPlot extends React.Component {
         .call(xAxis);
 
       // Draw the Ellipse
-      circle = svg.append("g").attr("transform", "translate(100, 100)");
-
+      let circle = svg.append("g").attr("transform", "translate(100, 100)");
       circle
         .append("ellipse")
         .attr("fill-opacity", 0)
@@ -146,11 +150,21 @@ export class ContourPlot extends React.Component {
       var that = this;
       function mousemove() {
         const position = d3.mouse(this);
-        circle.attr("transform", `translate(${position[0]}, ${position[1]})`);
+        let bucketX = Math.round((position[0] - margin) / 20);
+        let bucketY = Math.round(position[1] / 20);
+        let posX = bucketX * 20 + margin;
+        let posY = bucketY * 20;
+        let sigvar = dataset["sig_var"][bucketX][bucketY];
+
+        circle.attr("transform", `translate(${posX}, ${posY})`);
+        let log_noise = x.invert(posX - margin);
+        let log_lengthscale = y.invert(posY);
+
         that.setState({
           // TODO remove "log" in the names
-          noise: Math.exp(x.invert(position[0] - margin)),
-          lengthscale: Math.exp(y.invert(position[1]))
+          noise: Math.exp(log_noise),
+          lengthscale: Math.exp(log_lengthscale),
+          signal: sigvar
         });
       }
 
@@ -165,9 +179,11 @@ export class ContourPlot extends React.Component {
 
   render() {
     return (
-      <div style={{
-        height: this.props.config.height + 40
-      }}>
+      <div
+        style={{
+          height: this.props.config.height + 40
+        }}
+      >
         <div id="gp-contour" style={{ position: "absolute" }}>
           <svg id="contour" />
         </div>
@@ -183,6 +199,7 @@ export class ContourPlot extends React.Component {
             config={this.props.config}
             noise={this.state.noise}
             lengthscale={this.state.lengthscale}
+            signal={this.state.signal}
           />
         </div>
       </div>
@@ -203,7 +220,7 @@ class GPMarginalLikelihoodApp extends GPApp {
   }
 
   componentDidMount() {
-    d3.json("/data/dataset.json", data => {
+    d3.json("/data/dataset_contour.json", data => {
       for (let i = 0; i < data.X.length; i += 1) {
         this.addTrPoint(data.X[i], data.Y[i]);
       }
@@ -213,6 +230,7 @@ class GPMarginalLikelihoodApp extends GPApp {
   componentWillReceiveProps(nextProps) {
     this.setNewGPParam(nextProps.lengthscale);
     this.setNewGPNoise(nextProps.noise);
+    this.setNewGPSignalVariance(nextProps.signal);
   }
 
   setNewGPNoise(newVal) {
@@ -225,7 +243,7 @@ class GPMarginalLikelihoodApp extends GPApp {
       const dmTeTr = computeDistanceMatrix(tePointsX, newTrPointsX);
       gps[i] = new GP(
         gps[i].cf,
-        [gp.params[0], newVal],
+        [gp.params[0], newVal, gp.params[2]],
         gp.id,
         dmTr,
         dmTeTr,
@@ -248,7 +266,7 @@ class GPMarginalLikelihoodApp extends GPApp {
 
       gps[i] = new GP(
         gps[i].cf,
-        [newVal, gp.params[1]],
+        [newVal, gp.params[1], gp.params[2]],
         gp.id,
         dmTr,
         dmTeTr,
@@ -256,6 +274,26 @@ class GPMarginalLikelihoodApp extends GPApp {
       );
     }
     this.setState({ newGPParam: newVal, GPs: gps });
+  }
+
+  setNewGPSignalVariance(newVal) {
+    const newTrPointsX = this.state.trPointsX;
+    const newTrPointsY = this.state.trPointsY;
+    const dmTr = computeDistanceMatrix(newTrPointsX, newTrPointsX);
+    const dmTeTr = computeDistanceMatrix(tePointsX, newTrPointsX);
+    let gps = this.state.GPs;
+    for (var i = 0; i < gps.length; i++) {
+      const gp = gps[i];
+      gps[i] = new GP(
+        gps[i].cf,
+        [gp.params[0], gp.params[1], newVal],
+        gp.id,
+        dmTr,
+        dmTeTr,
+        newTrPointsY
+      );
+    }
+    this.setState({ newGPSignalVariance: newVal, GPs: gps });
   }
 
   addTrPoint(x, y) {
@@ -283,7 +321,6 @@ class GPMarginalLikelihoodApp extends GPApp {
   }
 
   render() {
-
     const app = (
       <GPAxis
         state={this.state}
@@ -293,6 +330,6 @@ class GPMarginalLikelihoodApp extends GPApp {
       />
     );
 
-    return (<div className="gp-axis">{app}</div>);
+    return <div className="gp-axis">{app}</div>;
   }
 }
