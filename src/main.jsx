@@ -47,7 +47,7 @@ ReactDOM.render(
     sliderOpt={sliderOptGPParam}
     config={defaultConfig}
     ty="lengthscales"
-    caption="Different length scales blah"
+    caption="Different length scales"
   />,
   document.getElementById("gp-lengthscales")
 );
