@@ -97,9 +97,9 @@ let ContourFigure = DistillFigure(ContourPlot);
 // Configuration for RHS GPAxis of contour plot
 // TODO: allow for customization of the contour plot size.
 let config = {
-  width: 500,
+  width: 450,
   height: 400,
-  margin: 30,
+  margin: {top: 10, left: 50, bottom: 50, right: 20}
 };
 
 ReactDOM.render(

@@ -5,11 +5,17 @@ import {
   computeDistanceMatrix,
   recomputeProjections,
   tePointsX,
-  defaultConfig
 } from "./gputils.jsx";
 
 import Slider from "./slider.jsx";
 const React = require("react");
+const ReactDOM = require("react-dom");
+
+function checkVisible(elm) {
+  var rect = elm.getBoundingClientRect();
+  var viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+  return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
+}
 
 export class HyperParamsGPApp extends React.Component {
   constructor(props) {
@@ -87,6 +93,21 @@ export class HyperParamsGPApp extends React.Component {
 
   clearTrPoints() {
     this.setState({ trPointsX: [], trPointsY: [] });
+  }
+
+  componentDidMount() {
+
+    function stopIfNeeded() {
+      if (!checkVisible(ReactDOM.findDOMNode(this.axis))) {
+        this.stopSampling();
+      }
+    }
+
+    this.timer = setInterval(stopIfNeeded.bind(this), 30);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timer);
   }
 
   toggleShowMeanAndVar() {
@@ -310,6 +331,7 @@ export class HyperParamsGPApp extends React.Component {
           </select>
         </div>
         <GPAxis
+          ref={axis => this.axis = axis}
           state={this.state}
           addNoise={addNoise}
           config={this.props.config}
