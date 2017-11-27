@@ -16,9 +16,13 @@ export class ContourPlot extends React.Component {
   constructor() {
     super();
     this.state = {
-      lengthscale: 1,
-      noise: 1,
-      signal: 1
+      lengthscale: NaN,
+      noise: NaN,
+      signal: NaN,
+      likelihood: NaN,
+      gp: new GP(0, [1, 0.2, 1], 1, [], [], []),
+      X: null,
+      Y: null
     };
   }
 
@@ -27,12 +31,14 @@ export class ContourPlot extends React.Component {
     const width = 400;
     const height = 400;
 
-    const svg = d3.select(this.svg)
-      .attr("width",  width + 2 * margin)
+    const svg = d3
+      .select(this.svg)
+      .attr("width", width + 2 * margin + 60)
       .attr("height", height + margin);
 
     d3.json("/data/dataset_contour.json", (error, dataset) => {
       this.dataset = dataset;
+
       let data = dataset["LL"];
       const gridSize = dataset["LL"].length;
       let llMax = -1.2207148089884097;
@@ -46,11 +52,7 @@ export class ContourPlot extends React.Component {
         }
       }
 
-      const threshold = numeric.linspace(
-        llMax * 1.0001,
-        llMin,
-        20
-      );
+      const threshold = numeric.linspace(llMax * 1.0001, llMin, 50);
       threshold.push(-6000);
 
       const contours = d3
@@ -87,9 +89,16 @@ export class ContourPlot extends React.Component {
         .data(contours(dt))
         .enter()
         .append("path")
-        .attr("d", d3.geoPath(d3.geoIdentity().scale(width / gridSize)
-          .translate([0, height])
-          .reflectY(true)))
+        .attr(
+          "d",
+          d3.geoPath(
+            d3
+              .geoIdentity()
+              .scale(width / gridSize)
+              .translate([0, height])
+              .reflectY(true)
+          )
+        )
         .attr("fill", d => color(d.value));
 
       svg
@@ -104,19 +113,7 @@ export class ContourPlot extends React.Component {
         .attr("transform", `translate(${margin}, ${height})`)
         .call(xAxis);
 
-      this.circle = svg
-        .append("g")
-        .attr("transform", "translate(100, 100)");
-
-      this.circle
-        .append("ellipse")
-        .attr("fill-opacity", 0)
-        .attr("stroke-width", 2)
-        .attr("stroke", "black")
-        .attr("cx", 0)
-        .attr("cy", 0)
-        .attr("rx", 10)
-        .attr("ry", 10);
+      this.circle = svg.append("g").attr("transform", "translate(100, 100)");
 
       // x axis label
       svg
@@ -140,48 +137,113 @@ export class ContourPlot extends React.Component {
 
       svg
         .append("g")
-        .attr("transform", `translate(${width - 15}, 5)`)
+        .attr("transform", `translate(${width + 60}, 5)`)
         .call(colorbar);
+
+      this.circle
+        .append("ellipse")
+        .attr("fill-opacity", 0)
+        .attr("stroke-width", 2)
+        .attr("stroke", "black")
+        .attr("cx", 0)
+        .attr("cy", 0)
+        .attr("rx", 10)
+        .attr("ry", 10);
+
+      let initialX = 50;
+      let initialY = 50;
+      let pixelsPerGrid = Math.round(width / gridSize);
+      let posX = initialX * pixelsPerGrid + margin;
+      let posY = initialY * pixelsPerGrid;
+
+      this.circle.attr("transform", `translate(${posX}, ${posY})`);
+      let noise = Math.exp(dataset["log_lik_std"][initialX]);
+      let lengthscale = Math.exp(
+        dataset["log_length_scales"][gridSize - 1 - initialY]
+      );
+      let sigvar = dataset["sig_var"][gridSize - 1 - initialY][initialX];
+      let likelihood = dataset["LL"][gridSize - 1 - initialY][initialX];
 
       this.ll = svg
         .append("text")
         .attr("transform", `translate(${margin + 20}, 20)`)
-        .text(`lengthscale: ${this.state.lengthscale.toFixed(3)}`);
+        .text(`lengthscale: ${lengthscale.toFixed(3)}`);
 
       this.ln = svg
         .append("text")
         .attr("transform", `translate(${margin + 20}, 40)`)
-        .text(`noise: ${this.state.noise.toFixed(3)}`);
+        .text(`noise: ${noise.toFixed(3)}`);
+
+      this.likelihood = svg
+        .append("text")
+        .attr("transform", `translate(${margin + 20}, 60)`)
+        .text(`log-likelihood: ${likelihood.toFixed(3)}`);
+
+      this.setState({ X: dataset["X"], Y: dataset["Y"],
+        lengthscale: lengthscale,
+        noise: noise,
+        signal: sigvar,
+        likelihood: likelihood
+      });
+      
+      this.setNewGPParams([lengthscale, noise, sigvar]);
 
       var that = this;
       function mousemove() {
         const position = d3.mouse(this);
-        let pixelsPerGrid = 20;
-        let bucketX = d3.min([Math.round((position[0] - margin) / pixelsPerGrid), gridSize - 1]);
-        let bucketY = d3.min([Math.round(position[1] / pixelsPerGrid), gridSize - 1]);
+        let pixelsPerGrid = Math.round(width / gridSize);
+        let bucketX = d3.min([
+          Math.round((position[0] - margin) / pixelsPerGrid),
+          gridSize - 1
+        ]);
+        let bucketY = d3.min([
+          Math.round(position[1] / pixelsPerGrid),
+          gridSize - 1
+        ]);
         let posX = bucketX * pixelsPerGrid + margin;
         let posY = bucketY * pixelsPerGrid;
-        let sigvar = dataset["sig_var"][bucketX][bucketY];
+        let sigvar = dataset["sig_var"][gridSize - 1 - bucketY][bucketX];
 
         that.circle.attr("transform", `translate(${posX}, ${posY})`);
-        let log_noise = x.invert(posX - margin);
-        let log_lengthscale = y.invert(posY);
+        let log_noise = dataset["log_lik_std"][bucketX];
+        let log_lengthscale =
+          dataset["log_length_scales"][gridSize - 1 - bucketY];
+        // console.log(`sigvar: ${sigvar}, log_noise: ${log_noise}, log_lengthscales: ${log_lengthscale}`);
+        // console.log(dataset["LL"][gridSize-1-bucketY][bucketX]);
 
         that.setState({
-          // TODO remove "log" in the names
-          noise: Math.exp(log_noise),
-          lengthscale: Math.exp(log_lengthscale),
-          signal: sigvar
+          likelihood: dataset["LL"][gridSize - 1 - bucketY][bucketX]
         });
+
+        that.setNewGPParams([
+          Math.exp(log_lengthscale),
+          Math.exp(log_noise),
+          sigvar
+        ]);
       }
 
       svg.on("click", mousemove);
     });
   }
 
+  setNewGPParams(params) {
+    const gp = this.state.gp;
+    const newTrPointsX = this.state.X;
+    const newTrPointsY = this.state.Y;
+    const dmTr = computeDistanceMatrix(newTrPointsX, newTrPointsX);
+    const dmTeTr = computeDistanceMatrix(tePointsX, newTrPointsX);
+    const newGP = new GP(gp.cf, params, gp.id, dmTr, dmTeTr, newTrPointsY);
+    this.setState({ gp: newGP,
+      lengthscale: params[0],
+      noise: params[1],
+      signal: params[2],
+    });
+  }
+
   componentWillUpdate(nextProps, nextState) {
     this.ll.text(`lengthscale: ${nextState.lengthscale.toFixed(3)}`);
     this.ln.text(`noise: ${nextState.noise.toFixed(3)}`);
+    this.likelihood.text(`log-likelihood: ${nextState.likelihood.toFixed(3)}`);
   }
 
   render() {
@@ -192,20 +254,21 @@ export class ContourPlot extends React.Component {
         }}
       >
         <div id="gp-contour" style={{ position: "absolute" }}>
-          <svg id="contour" ref={svg => this.svg = svg }/>
+          <svg id="contour" ref={svg => (this.svg = svg)} />
         </div>
         <div
           id="gp-marginal-likelihood"
           style={{
             position: "absolute",
-            left: 450,
+            left: 500,
             margin: "0px"
-          }}>
-          <GPMarginalLikelihoodApp
+          }}
+        >
+          <Axis
             config={this.props.config}
-            noise={this.state.noise}
-            lengthscale={this.state.lengthscale}
-            signal={this.state.signal}
+            X={this.state.X}
+            Y={this.state.Y}
+            gp={this.state.gp}
           />
         </div>
       </div>
@@ -213,129 +276,303 @@ export class ContourPlot extends React.Component {
   }
 }
 
-class GPMarginalLikelihoodApp extends GPApp {
+export class Axis extends React.Component {
   constructor(props) {
     super(props);
-    this.initialize();
-  }
-
-  initialize() {
-    const state = GPApp.getDefaultState();
-    state.showMeanAndVar = true;
-    this.state = state;
-  }
-
-  componentDidMount() {
-    d3.json("/data/dataset_contour.json", data => {
-      for (let i = 0; i < data.X.length; i += 1) {
-        this.addTrPoint(data.X[i], data.Y[i]);
-      }
-    });
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.setNewGPParam(nextProps.lengthscale);
-    this.setNewGPNoise(nextProps.noise);
-    this.setNewGPSignalVariance(nextProps.signal);
-  }
-
-  setNewGPNoise(newVal) {
-    const gps = this.state.GPs;
-    for (let i = 0; i < gps.length; i += 1) {
-      const gp = gps[i];
-      const newTrPointsX = this.state.trPointsX;
-      const newTrPointsY = this.state.trPointsY;
-      const dmTr = computeDistanceMatrix(newTrPointsX, newTrPointsX);
-      const dmTeTr = computeDistanceMatrix(tePointsX, newTrPointsX);
-      gps[i] = new GP(
-        gps[i].cf,
-        [gp.params[0], newVal, gp.params[2]],
-        gp.id,
-        dmTr,
-        dmTeTr,
-        newTrPointsY
-      );
-    }
-    this.setState({ newGPNoise: newVal, GPs: gps });
-  }
-
-  setNewGPParam(newVal) {
-    const gps = this.state.GPs;
-    for (let i = 0; i < gps.length; i += 1) {
-      const gp = gps[i];
-
-      const newTrPointsX = this.state.trPointsX;
-      const newTrPointsY = this.state.trPointsY;
-      const dmTr = computeDistanceMatrix(newTrPointsX, newTrPointsX);
-      const dmTeTr = computeDistanceMatrix(tePointsX, newTrPointsX);
-      // var newGPs = recomputeProjections(this.state.GPs, dmTr, dmTeTr, newTrPointsY);
-
-      gps[i] = new GP(
-        gps[i].cf,
-        [newVal, gp.params[1], gp.params[2]],
-        gp.id,
-        dmTr,
-        dmTeTr,
-        newTrPointsY
-      );
-    }
-    this.setState({ newGPParam: newVal, GPs: gps });
-  }
-
-  setNewGPSignalVariance(newVal) {
-    const newTrPointsX = this.state.trPointsX;
-    const newTrPointsY = this.state.trPointsY;
-    const dmTr = computeDistanceMatrix(newTrPointsX, newTrPointsX);
-    const dmTeTr = computeDistanceMatrix(tePointsX, newTrPointsX);
-    let gps = this.state.GPs;
-    for (var i = 0; i < gps.length; i++) {
-      const gp = gps[i];
-      gps[i] = new GP(
-        gps[i].cf,
-        [gp.params[0], gp.params[1], newVal],
-        gp.id,
-        dmTr,
-        dmTeTr,
-        newTrPointsY
-      );
-    }
-    this.setState({ newGPSignalVariance: newVal, GPs: gps });
-  }
-
-  addTrPoint(x, y) {
-    if (x >= -5 && x <= 5 && y >= -3 && y <= 3) {
-      // TODO fix range
-      const newTrPointsX = this.state.trPointsX.concat([x]);
-      const newTrPointsY = this.state.trPointsY.concat([y]);
-      const dmTr = computeDistanceMatrix(newTrPointsX, newTrPointsX);
-      const dmTeTr = computeDistanceMatrix(tePointsX, newTrPointsX);
-      const newGPs = recomputeProjections(
-        this.state.GPs,
-        dmTr,
-        dmTeTr,
-        newTrPointsY
-      );
-
-      this.setState({
-        trPointsX: newTrPointsX,
-        trPointsY: newTrPointsY,
-        dmTr,
-        dmTeTr,
-        GPs: newGPs
-      });
-    }
+    this.scales = { x: null, y: null };
   }
 
   render() {
-    const app = (
-      <GPAxis
-        state={this.state}
-        config={this.props.config}
-        addNoise={false}
-        addTrPoint={this.addTrPoint.bind(this)}
-      />
-    );
+    return <svg />;
+  }
 
-    return <div className="gp-axis">{app}</div>;
+  shouldComponentUpdate() {
+    return false;
+  }
+
+  drawTrPoints(pointsX, pointsY) {
+    const {x, y} = this.scales;
+    var p = this.trPoints
+      .selectAll("circle.trpoints")
+      .data(d3.zip(pointsX, pointsY))
+      .attr("cx", function(d) {
+        return x(d[0]);
+      })
+      .attr("cy", function(d) {
+        return y(d[1]);
+      });
+    p
+      .enter()
+      .append("circle")
+      .attr("class", "trpoints")
+      .attr("r", 2)
+      .attr("cx", function(d) {
+        return x(d[0]);
+      })
+      .attr("cy", function(d) {
+        return y(d[1]);
+      });
+    p.exit().remove();
+  }
+
+  componentWillReceiveProps(props) {
+    // redraw training points
+    if (props.X !== undefined) {
+      this.drawTrPoints(props.X, props.Y);
+    }
+    // redraw mean and variance if necessary
+    this.drawMeanAndVar(props);
+  }
+
+  drawMeanAndVar(props) {
+    var gpline = this.gpline;
+    var area = this.area;
+    let gps = [props.gp];
+
+    let paths = this.meanLines
+      .selectAll("path")
+      .data(gps, function(d) {
+        return d.id;
+      })
+      .attr("d", function(d) {
+        var datay = d.mu;
+        return gpline(d3.zip(tePointsX, datay));
+      });
+    paths
+      .enter()
+      .append("path")
+      .attr("d", function(d) {
+        var datay = d.mu;
+        return gpline(d3.zip(tePointsX, datay));
+      })
+      .attr("class", function(d) {
+        return "muline line line" + d.id;
+      });
+    paths.exit().remove();
+
+    let areas = this.areas
+      .selectAll("path")
+      .data(gps, function(d) {
+        return d.id;
+      })
+      .attr("d", function(d) {
+        let upper = numeric.add(d.mu, d.sd95);
+        let lower = numeric.sub(d.mu, d.sd95);
+        return area(d3.zip(tePointsX, upper, lower));
+      });
+
+    areas
+      .enter()
+      .append("path")
+      .attr("d", function(d) {
+        var upper = numeric.add(d.mu, d.sd95);
+        var lower = numeric.sub(d.mu, d.sd95);
+        return area(d3.zip(tePointsX, upper, lower));
+      })
+      .attr("class", function(d) {
+        return "variance variance" + d.id;
+      });
+    areas.exit().remove();
+  }
+
+  componentDidMount() {
+    var svg = d3.select(ReactDOM.findDOMNode(this));
+    const config = this.props.config;
+    const height = config.height;
+    const width = config.width;
+    const margin = config.margin;
+
+    svg.attr("height", height).attr("width", width);
+    svg = svg.append("g").attr("transform", `translate(${margin}, ${margin})`);
+
+    this.svg = svg;
+    let fig_height = height - 2 * margin;
+    let fig_width = width - 2 * margin;
+
+    // helper functions
+    var x = d3
+      .scaleLinear()
+      .range([0, fig_width])
+      .domain([-5, 5]);
+    var y = d3
+      .scaleLinear()
+      .range([fig_height, 0])
+      .domain([-3, 3]);
+    this.scales.x = x;
+    this.scales.y = y;
+    var xAxis = d3
+      .axisBottom()
+      .scale(x)
+      .ticks(5);
+    var yAxis = d3
+      .axisLeft()
+      .scale(y)
+      .ticks(5);
+    this.gpline = d3
+      .line()
+      .x(function(d) {
+        return x(d[0]);
+      })
+      .y(function(d) {
+        return y(d[1]);
+      });
+
+    this.area = d3
+      .area()
+      .x(function(d) {
+        return x(d[0]);
+      })
+      .y0(function(d) {
+        return y(d[1]);
+      })
+      .y1(function(d) {
+        return y(d[2]);
+      });
+
+    // axes
+    svg
+      .append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + fig_height + ")")
+      .call(xAxis);
+
+    svg
+      .append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
+
+    this.meanLines = svg.append("g");
+    this.lines = svg.append("g");
+    this.trPoints = svg.append("g");
+    this.valuelines = svg.append("g");
+    this.areas = svg.append("g");
+    // this.drawTrPoints(this.props.state.trPointsX, this.props.state.trPointsY);
   }
 }
+
+// class GPMarginalLikelihoodApp extends GPApp {
+//   constructor(props) {
+//     super(props);
+//     this.initialize();
+//   }
+
+//   initialize() {
+//     const state = GPApp.getDefaultState();
+//     state.showMeanAndVar = true;
+//     this.state = state;
+//   }
+
+//   componentDidMount() {
+//     d3.json("/data/dataset_contour.json", data => {
+//       for (let i = 0; i < data.X.length; i += 1) {
+//         this.addTrPoint(data.X[i], data.Y[i]);
+//       }
+//     });
+//   }
+
+//   componentWillReceiveProps(nextProps) {
+//     this.setNewGPParam(nextProps.lengthscale);
+//     this.setNewGPNoise(nextProps.noise);
+//     this.setNewGPSignalVariance(nextProps.signal);
+//   }
+
+//   setNewGPNoise(newVal) {
+//     const gps = this.state.GPs;
+//     for (let i = 0; i < gps.length; i += 1) {
+//       const gp = gps[i];
+//       const newTrPointsX = this.state.trPointsX;
+//       const newTrPointsY = this.state.trPointsY;
+//       const dmTr = computeDistanceMatrix(newTrPointsX, newTrPointsX);
+//       const dmTeTr = computeDistanceMatrix(tePointsX, newTrPointsX);
+//       gps[i] = new GP(
+//         gps[i].cf,
+//         [gp.params[0], newVal, gp.params[2]],
+//         gp.id,
+//         dmTr,
+//         dmTeTr,
+//         newTrPointsY
+//       );
+//     }
+//     this.setState({ newGPNoise: newVal, GPs: gps });
+//   }
+
+//   setNewGPParam(newVal) {
+//     const gps = this.state.GPs;
+//     for (let i = 0; i < gps.length; i += 1) {
+//       const gp = gps[i];
+
+//       const newTrPointsX = this.state.trPointsX;
+//       const newTrPointsY = this.state.trPointsY;
+//       const dmTr = computeDistanceMatrix(newTrPointsX, newTrPointsX);
+//       const dmTeTr = computeDistanceMatrix(tePointsX, newTrPointsX);
+//       // var newGPs = recomputeProjections(this.state.GPs, dmTr, dmTeTr, newTrPointsY);
+
+//       gps[i] = new GP(
+//         gps[i].cf,
+//         [newVal, gp.params[1], gp.params[2]],
+//         gp.id,
+//         dmTr,
+//         dmTeTr,
+//         newTrPointsY
+//       );
+//     }
+//     this.setState({ newGPParam: newVal, GPs: gps });
+//   }
+
+//   setNewGPSignalVariance(newVal) {
+//     const newTrPointsX = this.state.trPointsX;
+//     const newTrPointsY = this.state.trPointsY;
+//     const dmTr = computeDistanceMatrix(newTrPointsX, newTrPointsX);
+//     const dmTeTr = computeDistanceMatrix(tePointsX, newTrPointsX);
+//     let gps = this.state.GPs;
+//     for (var i = 0; i < gps.length; i++) {
+//       const gp = gps[i];
+//       gps[i] = new GP(
+//         gps[i].cf,
+//         [gp.params[0], gp.params[1], newVal],
+//         gp.id,
+//         dmTr,
+//         dmTeTr,
+//         newTrPointsY
+//       );
+//     }
+//     this.setState({ newGPSignalVariance: newVal, GPs: gps });
+//   }
+
+//   addTrPoint(x, y) {
+//     if (x >= -5 && x <= 5 && y >= -3 && y <= 3) {
+//       // TODO fix range
+//       const newTrPointsX = this.state.trPointsX.concat([x]);
+//       const newTrPointsY = this.state.trPointsY.concat([y]);
+//       const dmTr = computeDistanceMatrix(newTrPointsX, newTrPointsX);
+//       const dmTeTr = computeDistanceMatrix(tePointsX, newTrPointsX);
+//       const newGPs = recomputeProjections(
+//         this.state.GPs,
+//         dmTr,
+//         dmTeTr,
+//         newTrPointsY
+//       );
+
+//       this.setState({
+//         trPointsX: newTrPointsX,
+//         trPointsY: newTrPointsY,
+//         dmTr,
+//         dmTeTr,
+//         GPs: newGPs
+//       });
+//     }
+//   }
+
+//   render() {
+//     const app = (
+//       <GPAxis
+//         state={this.state}
+//         config={this.props.config}
+//         addNoise={false}
+//         addTrPoint={this.addTrPoint.bind(this)}
+//       />
+//     );
+
+//     return <div className="gp-axis">{app}</div>;
+//   }
+// }
