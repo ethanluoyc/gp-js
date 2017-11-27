@@ -167,11 +167,13 @@ export class ContourPlot extends React.Component {
 
       this.ll = svg
         .append("text")
+        .attr("fill", "white")
         .attr("transform", `translate(${margin + 20}, 20)`)
         .text(`lengthscale: ${lengthscale.toFixed(3)}`);
 
       this.ln = svg
         .append("text")
+        .attr("fill", "white")
         .attr("transform", `translate(${margin + 20}, 40)`)
         .text(`noise: ${noise.toFixed(3)}`);
 
@@ -181,7 +183,7 @@ export class ContourPlot extends React.Component {
         lengthscale: lengthscale,
         noise: noise,
         signal: sigvar,
-        likelihood: likelihood
+        likelihood: likelihood / dataset["Y"].length
       });
 
       this.setNewGPParams([lengthscale, noise, sigvar]);
@@ -210,7 +212,7 @@ export class ContourPlot extends React.Component {
         // console.log(dataset["LL"][gridSize-1-bucketY][bucketX]);
 
         that.setState({
-          likelihood: dataset["LL"][gridSize - 1 - bucketY][bucketX]
+          likelihood: dataset["LL"][gridSize - 1 - bucketY][bucketX] / dataset["X"].length
         });
 
         that.setNewGPParams([
@@ -254,7 +256,7 @@ export class ContourPlot extends React.Component {
         <div id="gp-contour" style={{ position: "absolute" }}>
           <svg id="contour" ref={svg => (this.svg = svg)} />
         </div>
-        <div style={{position: "absolute", left: 550, width: 300}}>log-likelihood: {this.state.likelihood.toFixed(3)}</div>
+        <div style={{position: "absolute", left: 550, width: 300}}>marginal likelihood: {this.state.likelihood.toFixed(3)}</div>
         <div
           id="gp-marginal-likelihood"
           style={{
@@ -389,12 +391,12 @@ export class Axis extends React.Component {
     let xAxis = d3
       .axisBottom()
       .scale(x)
-      .ticks(5);
+      .ticks(10);
 
     let yAxis = d3
       .axisLeft()
       .scale(y)
-      .ticks(5);
+      .ticks(10);
 
     this.gpline = d3
       .line()

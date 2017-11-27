@@ -21,6 +21,7 @@ export class GPAddObservationAPP extends GPApp {
   initialize() {
     const state = GPApp.getDefaultState();
     state.showMeanAndVar = true;
+    state.addTrPoints = true;
     this.state = state;
   }
 
@@ -91,6 +92,20 @@ export class GPAddObservationAPP extends GPApp {
     }
   }
 
+  clearTrPoints() {
+    var dmTr = computeDistanceMatrix([], []);
+    var dmTeTr = computeDistanceMatrix(tePointsX, []);
+    var newGPs = recomputeProjections(this.state.GPs, dmTr, dmTeTr, []);
+    this.setState({
+      GPs: newGPs,
+      dmTr: dmTr,
+      dmTeTr: dmTeTr,
+      trPointsX: [],
+      trPointsY: []
+    });
+    this.forceUpdate();
+  }
+
   componentDidMount() {
     this.setState({showMeanAndVar: true});
   }
@@ -127,23 +142,8 @@ export class GPAddObservationAPP extends GPApp {
             {this.state.newGPNoise.toFixed(2)}
           </div>
         </div>
-        <div id="controls">
-          {this.state.addTrPoints ? (
-            <span className="info">
-              {" "}
-              click on the figure to add an observation{" "}
-            </span>
-          ) : (
-            ""
-          )}
-          <button onClick={this.toggleAddTrPoints.bind(this)}>
-            {this.state.addTrPoints ? "done" : "add observations"}
-          </button>
-          {this.state.addTrPoints ? (
-            <button onClick={this.clearTrPoints.bind(this)}>clear</button>
-          ) : (
-            ""
-          )}
+        <div className="controls">
+          {<button onClick={this.clearTrPoints.bind(this)}>Clear</button>}
         </div>
         {app}
       </div>

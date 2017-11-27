@@ -236,7 +236,7 @@ export class HyperParamsGPApp extends React.Component {
   render() {
     const sliderOpt = this.props.sliderOpt;
     let addNoise = false;
-    const gpoptions = cfs.map(function(c) {
+    const gpoptions = cfs.slice(0, 4).map(function(c) {
       return (
         <option key={c.id} value={c.id}>
           {c.name}

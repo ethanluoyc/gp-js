@@ -5,8 +5,8 @@ import { ContourPlot } from "./marginal_likelihood.jsx";
 import { HyperParamsGPApp } from "./hyperparams.jsx";
 import { defaultConfig } from "./gputils.jsx";
 
-const sliderOptGPParam =  { width: 200, height: 9, min: 0.01, max: 5 }; // length-scales
-const sliderOptGPNoise =  { width: 200, height: 9, min: 0,    max: 2 }; // noise-variance 
+const sliderOptGPParam =  { width: 200, height: 9, min: 0.01, max: 10 }; // length-scales
+const sliderOptGPNoise =  { width: 200, height: 9, min: 0,    max: 1 }; // noise-variance 
 const sliderOptGPSignal = { width: 200, height: 9, min: 0,    max: 1 }; // signal-variance
 
 /** Wraps arbitrary React.Component as a figure 
@@ -47,7 +47,7 @@ ReactDOM.render(
     sliderOpt={sliderOptGPParam}
     config={defaultConfig}
     ty="lengthscales"
-    caption="Different length scales"
+    caption="Different length scales blah"
   />,
   document.getElementById("gp-lengthscales")
 );
