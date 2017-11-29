@@ -6,10 +6,10 @@ import { HyperParamsGPApp } from "./hyperparams.jsx";
 import { defaultConfig } from "./gputils.jsx";
 
 const sliderOptGPParam =  { width: 200, height: 9, min: 0.01, max: 10 }; // length-scales
-const sliderOptGPNoise =  { width: 200, height: 9, min: 0,    max: 1 }; // noise-variance 
+const sliderOptGPNoise =  { width: 200, height: 9, min: 0,    max: 1 }; // noise-variance
 const sliderOptGPSignal = { width: 200, height: 9, min: 0,    max: 1 }; // signal-variance
 
-/** Wraps arbitrary React.Component as a figure 
+/** Wraps arbitrary React.Component as a figure
  * @param {React.Component} WrappedComponent, component class to be wrapped
 */
 function DistillFigure(WrappedComponent) {
@@ -84,10 +84,10 @@ ReactDOM.render(
 // Update observations
 let GPAddObservationFigure = DistillFigure(GPAddObservationAPP);
 ReactDOM.render(
-  <GPAddObservationFigure 
+  <GPAddObservationFigure
     sliderOptGPParam={sliderOptGPParam}
     sliderOptGPNoise={sliderOptGPNoise}
-    caption="Update observations" />,
+    caption="Interactive Gaussian process. Click to add observations, and move the sliders to see the effect of different length-scales and noise levels." />,
   document.getElementById("gp-update-observations")
 );
 
@@ -103,7 +103,7 @@ let config = {
 };
 
 ReactDOM.render(
-  <ContourFigure 
+  <ContourFigure
     config={config}
     caption="Contour plot for marginal likelihood" />,
   document.getElementById("app")
