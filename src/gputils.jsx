@@ -342,6 +342,7 @@ export class GPAxis extends React.Component {
                             var datay = numeric.add(numeric.dot(d.proj, d.z), d.mu);
                             let addnoise = props.addNoise;
                             if (addnoise) {
+                              // reparametrized to be N(0, \sigma)
                               const noise = numeric.mul(d.params[1], randnArray(numeric.dim(d.z)));
                               datay = numeric.add(noise, datay);
                             }
@@ -364,19 +365,23 @@ export class GPAxis extends React.Component {
     const width  = config.width;
     const margin = config.margin;
 
+    var figHeight = height - 2*margin,
+        figWidth  = width  - 2*margin;
+
     svg.attr("height", height)
        .attr("width", width);
 
+    this.fig = svg;
     svg = svg.append("g")
       .attr("transform", `translate(${margin}, ${margin})`)
+      .attr("width", figWidth)
+      .attr("height", figHeight);
 
     this.svg = svg;
-    var fig_height = height - 2*margin,
-        fig_width  = width  - 2*margin;
 
     // helper functions
-    var x = d3.scaleLinear().range([0, fig_width]).domain([-5, 5]);
-    var y = d3.scaleLinear().range([fig_height, 0]).domain([-3, 3]);
+    var x = d3.scaleLinear().range([0, figWidth]).domain([-5, 5]);
+    var y = d3.scaleLinear().range([figHeight, 0]).domain([-3, 3]);
     this.scales.x = x;
     this.scales.y = y;
     var xAxis = d3.axisBottom()
@@ -397,12 +402,33 @@ export class GPAxis extends React.Component {
     // axes
     svg.append("g")
        .attr("class", "x axis")
-       .attr("transform", "translate(0,"+fig_height+")")
+       .attr("transform", "translate(0,"+figHeight+")")
        .call(xAxis);
 
     svg.append("g")
        .attr("class", "y axis")
        .call(yAxis);
+
+    // x axis label
+    this.fig
+      .append("text")
+      .attr(
+        "transform",
+        `translate(${figWidth / 2 + margin}, ${figHeight + margin * 2})`
+      )
+      .style("text-anchor", "middle")
+      .text("x");
+
+    // y axis label
+    this.fig
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -5)
+      .attr("x", -figHeight / 2)
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("f(x)");
+
 
     this.meanLines = svg.append("g");
     this.lines = svg.append("g");
