@@ -27,7 +27,7 @@ export class ContourPlot extends React.Component {
   }
 
   componentDidMount() {
-    const margin = {top: 10, left: 50, bottom: 50, right: 20};
+    const margin = { top: 10, left: 50, bottom: 50, right: 20 };
     const width = 400;
     const height = 400;
 
@@ -86,7 +86,8 @@ export class ContourPlot extends React.Component {
         .append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-      contourPlot.selectAll("path")
+      contourPlot
+        .selectAll("path")
         .data(contours(dt))
         .enter()
         .append("path")
@@ -138,7 +139,9 @@ export class ContourPlot extends React.Component {
 
       svg
         .append("g")
-        .attr("transform", `translate(${width + margin.left + 10}, ${margin.top})`)
+        .attr(
+          "transform",
+          `translate(${width + margin.left + 10}, ${margin.top})`)
         .call(colorbar);
 
       this.circle
@@ -193,7 +196,7 @@ export class ContourPlot extends React.Component {
         const position = d3.mouse(this);
         let pixelsPerGrid = Math.round(width / gridSize);
         let bucketX = d3.min([
-          Math.round((position[0]) / pixelsPerGrid),
+          Math.round(position[0] / pixelsPerGrid),
           gridSize - 1
         ]);
         let bucketY = d3.min([
@@ -204,16 +207,17 @@ export class ContourPlot extends React.Component {
         let posY = bucketY * pixelsPerGrid;
         let sigvar = dataset["sig_var"][gridSize - 1 - bucketY][bucketX];
 
-        that.circle.
-          attr("transform", `translate(${posX + margin.left}, ${posY + margin.top})`);
+        that.circle.attr(
+          "transform",
+          `translate(${posX + margin.left}, ${posY + margin.top})`
+        );
         let log_noise = dataset["log_lik_std"][bucketX];
         let log_lengthscale =
           dataset["log_length_scales"][gridSize - 1 - bucketY];
-        // console.log(`sigvar: ${sigvar}, log_noise: ${log_noise}, log_lengthscales: ${log_lengthscale}`);
-        // console.log(dataset["LL"][gridSize-1-bucketY][bucketX]);
 
         that.setState({
-          likelihood: dataset["LL"][gridSize - 1 - bucketY][bucketX] / dataset["X"].length
+          likelihood:
+            dataset["LL"][gridSize - 1 - bucketY][bucketX] / dataset["X"].length
         });
 
         that.setNewGPParams([
@@ -251,13 +255,18 @@ export class ContourPlot extends React.Component {
     return (
       <div
         style={{
-          height: this.props.config.height + this.props.config.margin.top + this.props.config.margin.bottom
+          height:
+            this.props.config.height +
+            this.props.config.margin.top +
+            this.props.config.margin.bottom
         }}
       >
         <div id="gp-contour" style={{ position: "absolute" }}>
           <svg id="contour" ref={svg => (this.svg = svg)} />
         </div>
-        <div style={{position: "absolute", left: 560, width: 300}}>marginal likelihood: {this.state.likelihood.toFixed(3)}</div>
+        <div style={{ position: "absolute", left: 560, width: 300 }}>
+          marginal likelihood: {this.state.likelihood.toFixed(3)}
+        </div>
         <div
           id="gp-marginal-likelihood"
           style={{
@@ -327,7 +336,7 @@ export class Axis extends React.Component {
   }
 
   drawMeanAndVar(props) {
-    let {gpline, area} = this;
+    let { gpline, area } = this;
     let gps = [props.gp];
 
     this.meanLines
@@ -370,9 +379,13 @@ export class Axis extends React.Component {
     const config = this.props.config;
     const { height, width, margin } = config;
 
-    svg.attr("height", height + margin.top + margin.bottom)
+    svg
+      .attr("height", height + margin.top + margin.bottom)
       .attr("width", width + margin.left + margin.right);
-    svg = svg.append("g").attr("transform", `translate(${margin.left}, ${margin.top})`);
+    this.fig = svg;
+    svg = svg
+      .append("g")
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
     this.svg = svg;
 
     let figHeight = height;
@@ -422,6 +435,26 @@ export class Axis extends React.Component {
       .append("g")
       .attr("class", "y axis")
       .call(yAxis);
+
+    // x axis label
+    this.fig
+      .append("text")
+      .attr(
+        "transform",
+        `translate(${width / 2 + margin.left}, ${height + margin.top + 40})`
+      )
+      .style("text-anchor", "middle")
+      .text("x");
+
+    // y axis label
+    this.fig
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0)
+      .attr("x", -height / 2)
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("f(x)");
 
     this.meanLines = svg.append("g");
     this.lines = svg.append("g");

@@ -268,7 +268,7 @@ export class HyperParamsGPApp extends React.Component {
     if (this.props.ty == "lengthscales") {
       control = (
         <div>
-          Length scale{" "}
+          Length Scale{" "}
           <Slider
             value={this.state.newGPParam}
             setValue={this.setNewGPParam.bind(this)}
